@@ -1,74 +1,33 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Icon from '../../components/Icon.jsx';
 import styles from './PricingPage.module.css';
 
-const plans = [
-  {
-    name: 'Basic',
-    price: '29',
-    period: 'per month',
-    description: 'Perfect for small teams getting started',
-    features: [
-      'Up to 5 team members',
-      '500 tender searches/month',
-      'Basic email alerts',
-      'Standard support',
-      'Export to PDF',
-      'Basic analytics',
-    ],
-    cta: 'Start Basic',
-    highlighted: false,
-  },
-  {
-    name: 'Pro',
-    price: '79',
-    period: 'per month',
-    description: 'For growing teams that need more power',
-    features: [
-      'Up to 25 team members',
-      'Unlimited tender searches',
-      'Advanced AI alerts',
-      'Priority support',
-      'Export to PDF & Excel',
-      'Advanced analytics',
-      'Team collaboration',
-      'AI response assistant',
-    ],
-    cta: 'Start Pro',
-    highlighted: true,
-  },
-  {
-    name: 'Enterprise',
-    price: '199',
-    period: 'per month',
-    description: 'For organizations with advanced needs',
-    features: [
-      'Unlimited team members',
-      'Unlimited tender searches',
-      'Custom AI workflows',
-      'Dedicated account manager',
-      'Full API access',
-      'Custom integrations',
-      'SSO & advanced security',
-      'Custom training',
-    ],
-    cta: 'Contact Sales',
-    highlighted: false,
-  },
-];
+const planKeys = ['basic', 'pro', 'enterprise'];
 
 export default function PricingPage() {
+  const { t } = useTranslation();
   const [hoveredPlan, setHoveredPlan] = useState(null);
+
+  const plans = planKeys.map((key, i) => ({
+    key,
+    name: t(`public.pricing.${key}.name`),
+    price: t(`public.pricing.${key}.price`),
+    description: t(`public.pricing.${key}.description`),
+    features: Array.from({ length: key === 'basic' ? 6 : key === 'pro' ? 8 : 8 }, (_, j) => t(`public.pricing.${key}.features.${j}`)),
+    cta: t(`public.pricing.${key}.cta`),
+    highlighted: key === 'pro',
+  }));
 
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.gridPattern} />
         <div className={styles.container}>
-          <h1 className={styles.heroTitle}>Simple, transparent pricing</h1>
+          <h1 className={styles.heroTitle}>{t('public.pricing.heading')}</h1>
           <p className={styles.heroSubtitle}>
-            Choose the plan that fits your team. No hidden fees, cancel anytime.
+            {t('public.pricing.subtitle')}
           </p>
         </div>
       </section>
@@ -78,7 +37,7 @@ export default function PricingPage() {
           <div className={styles.plansGrid}>
             {plans.map((plan, i) => (
               <div
-                key={plan.name}
+                key={plan.key}
                 className={`${styles.planCard} ${plan.highlighted ? styles.highlighted : ''} ${hoveredPlan === i ? styles.lifted : ''}`}
                 onMouseEnter={() => setHoveredPlan(i)}
                 onMouseLeave={() => setHoveredPlan(null)}
@@ -87,14 +46,14 @@ export default function PricingPage() {
                 {plan.highlighted && (
                   <div className={styles.popularBadge}>
                     <Icon name="star" size={14} />
-                    Most Popular
+                    {t('public.pricing.popularBadge')}
                   </div>
                 )}
                 <h3 className={styles.planName}>{plan.name}</h3>
                 <div className={styles.planPrice}>
                   <span className={styles.currency}>EUR</span>
                   <span className={styles.amount}>{plan.price}</span>
-                  <span className={styles.period}>/{plan.period}</span>
+                  <span className={styles.period}>/{t('public.pricing.perMonth')}</span>
                 </div>
                 <p className={styles.planDescription}>{plan.description}</p>
                 <ul className={styles.planFeatures}>
@@ -106,7 +65,7 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <Link
-                  to={plan.name === 'Enterprise' ? '/demo' : '/register'}
+                  to={plan.key === 'enterprise' ? '/demo' : '/register'}
                   className={`${styles.planCta} ${plan.highlighted ? styles.ctaPrimary : styles.ctaSecondary}`}
                 >
                   {plan.cta}

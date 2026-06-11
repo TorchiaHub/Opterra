@@ -14,16 +14,6 @@ export const TENDER_STATUS = {
   CANCELLED: 'cancelled',
 }
 
-export const TENDER_STATUS_LABELS = {
-  draft: 'Bozza',
-  active: 'Attiva',
-  in_review: 'In revisione',
-  submitted: 'Inviata',
-  won: 'Vinta',
-  lost: 'Persa',
-  cancelled: 'Annullata',
-}
-
 export const TENDER_STATUS_COLORS = {
   draft: 'neutral',
   active: 'info',
@@ -41,23 +31,10 @@ export const TENDER_TYPES = {
   BANDO: 'bando',
 }
 
-export const TENDER_TYPE_LABELS = {
-  rfp: 'RFP',
-  rfq: 'RFQ',
-  tender: 'Gara',
-  bando: 'Bando',
-}
-
 export const REQUIREMENT_PRIORITY = {
   MANDATORY: 'mandatory',
   IMPORTANT: 'important',
   OPTIONAL: 'optional',
-}
-
-export const REQUIREMENT_PRIORITY_LABELS = {
-  mandatory: 'Obbligatorio',
-  important: 'Importante',
-  optional: 'Opzionale',
 }
 
 export const REQUIREMENT_STATUS = {
@@ -67,25 +44,11 @@ export const REQUIREMENT_STATUS = {
   NOT_APPLICABLE: 'na',
 }
 
-export const REQUIREMENT_STATUS_LABELS = {
-  pending: 'In attesa',
-  in_progress: 'In corso',
-  completed: 'Completato',
-  na: 'N/A',
-}
-
 export const TASK_STATUS = {
   TODO: 'todo',
   IN_PROGRESS: 'in_progress',
   DONE: 'done',
   BLOCKED: 'blocked',
-}
-
-export const TASK_STATUS_LABELS = {
-  todo: 'Da fare',
-  in_progress: 'In corso',
-  done: 'Completata',
-  blocked: 'Bloccata',
 }
 
 export const GO_NOGO_DECISIONS = {
@@ -94,16 +57,18 @@ export const GO_NOGO_DECISIONS = {
   NO_GO: 'no_go',
 }
 
-export const GO_NOGO_LABELS = {
-  pending: 'Da valutare',
-  go: 'Go',
-  no_go: 'No-Go',
-}
-
 export const SCRAPING_STATUS = {
   NEW: 'new',
   SAVED: 'saved',
   DISMISSED: 'dismissed',
+}
+
+export function getStatusLabel(status) {
+  return `status.${status}`
+}
+
+export function getTenderTypeLabel(type) {
+  return `tenderTypes.${type}`
 }
 
 export const APP_ROUTES = {

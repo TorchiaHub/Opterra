@@ -1,34 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
 import { FilterBar } from '../../components/tables/FilterBar'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { Loader } from '../../components/feedback/Loader'
 import { SubmitButton } from '../../components/forms/SubmitButton'
 import { SectionCard } from '../../components/cards/SectionCard'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
 import { formatDate } from '../../utils/date'
+import { getDiscoveredTenders, updateDiscoveredTenderStatus } from '../../api/scraping.api'
 import styles from './BandiBrowserPage.module.css'
-
-const mockResults = [
-  { id: 1, title: 'Fornitura piattaforma digitalizzazione appalti', issuer: 'Comune di Firenze', source: 'ANAC', publishedAt: '2026-06-10T10:00:00Z', deadlineAt: '2026-07-20T10:00:00Z', category: 'Informatica', relevanceScore: 95, status: 'new', valueAmount: 450000 },
-  { id: 2, title: 'Servizi cloud e hosting', issuer: 'Regione Toscana', source: 'Toscana Appalti', publishedAt: '2026-06-09T10:00:00Z', deadlineAt: '2026-07-15T10:00:00Z', category: 'Cloud', relevanceScore: 88, status: 'new', valueAmount: 120000 },
-  { id: 3, title: 'Manutenzione edifici scolastici', issuer: 'Provincia di Pisa', source: 'ANAC', publishedAt: '2026-06-08T10:00:00Z', deadlineAt: '2026-08-05T10:00:00Z', category: 'Edilizia', relevanceScore: 42, status: 'dismissed', valueAmount: 80000 },
-  { id: 4, title: 'Consulenza GDPR e privacy', issuer: 'ASL Firenze', source: 'Toscana Appalti', publishedAt: '2026-06-07T10:00:00Z', deadlineAt: '2026-06-30T10:00:00Z', category: 'Legale', relevanceScore: 73, status: 'saved', valueAmount: 35000 },
-  { id: 5, title: 'Fornitura workstation e server', issuer: 'Universita di Siena', source: 'ANAC', publishedAt: '2026-06-06T10:00:00Z', deadlineAt: '2026-07-10T10:00:00Z', category: 'Hardware', relevanceScore: 81, status: 'new', valueAmount: 95000 },
-  { id: 6, title: 'Sviluppo app mobile turismo', issuer: 'Comune di Lucca', source: 'Toscana Appalti', publishedAt: '2026-06-05T10:00:00Z', deadlineAt: '2026-07-25T10:00:00Z', category: 'Mobile', relevanceScore: 67, status: 'new', valueAmount: 60000 },
-  { id: 7, title: 'Servizi di formazione IT', issuer: 'Regione Umbria', source: 'ANAC', publishedAt: '2026-06-04T10:00:00Z', deadlineAt: '2026-07-18T10:00:00Z', category: 'Formazione', relevanceScore: 55, status: 'dismissed', valueAmount: 25000 },
-  { id: 8, title: 'Fornitura software CRM', issuer: 'Comune di Perugia', source: 'ANAC', publishedAt: '2026-06-03T10:00:00Z', deadlineAt: '2026-07-12T10:00:00Z', category: 'Informatica', relevanceScore: 92, status: 'new', valueAmount: 180000 },
-]
-
-const statusConfig = {
-  new: { label: 'Nuovo', variant: 'info' },
-  saved: { label: 'Salvato', variant: 'success' },
-  dismissed: { label: 'Ignorato', variant: 'neutral' },
-}
 
 const sourceConfig = {
   'ANAC': { icon: 'globe', color: 'info' },
@@ -37,10 +23,52 @@ const sourceConfig = {
 
 export function BandiBrowserPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [results, setResults] = useState(mockResults)
+
+  const fetchTenders = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await getDiscoveredTenders()
+      setResults((Array.isArray(data) ? data : []).map(row => {
+        let tags = []
+        try {
+          tags = Array.isArray(row.ai_tags_json) ? row.ai_tags_json : JSON.parse(row.ai_tags_json || '[]')
+        } catch { /* tags non disponibili */ }
+        return {
+          id: row.id,
+          title: row.title || '',
+          issuer: row.issuer || '—',
+          source: row.source_name || '—',
+          category: tags[0] || '—',
+          relevanceScore: row.ai_relevance_score != null ? Math.round(Number(row.ai_relevance_score)) : 0,
+          deadlineAt: row.deadline_at,
+          status: row.status,
+          convertedTenderId: row.converted_tender_id,
+        }
+      }))
+    } catch (err) {
+      setError(err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchTenders()
+  }, [fetchTenders])
+
+  const statusConfig = {
+    new: { label: t('private.bandiBrowser.statusLabels.new'), variant: 'info' },
+    saved: { label: t('private.bandiBrowser.statusLabels.saved'), variant: 'success' },
+    dismissed: { label: t('private.bandiBrowser.statusLabels.dismissed'), variant: 'neutral' },
+  }
 
   const filtered = results.filter(r => {
     if (search && !r.title.toLowerCase().includes(search.toLowerCase()) && !r.issuer.toLowerCase().includes(search.toLowerCase())) return false
@@ -49,19 +77,27 @@ export function BandiBrowserPage() {
     return true
   })
 
-  const categories = [...new Set(mockResults.map(r => r.category))]
+  const categories = [...new Set(results.map(r => r.category))]
 
-  function handleSave(id) {
-    setResults(prev => prev.map(r => r.id === id ? { ...r, status: 'saved' } : r))
+  async function handleSave(id) {
+    try {
+      await updateDiscoveredTenderStatus(id, { status: 'saved' })
+      setResults(prev => prev.map(r => r.id === id ? { ...r, status: 'saved' } : r))
+    } catch (err) {
+    }
   }
 
-  function handleDismiss(id) {
-    setResults(prev => prev.map(r => r.id === id ? { ...r, status: 'dismissed' } : r))
+  async function handleDismiss(id) {
+    try {
+      await updateDiscoveredTenderStatus(id, { status: 'dismissed' })
+      setResults(prev => prev.map(r => r.id === id ? { ...r, status: 'dismissed' } : r))
+    } catch (err) {
+    }
   }
 
   const columns = [
     {
-      label: 'Bando',
+      label: t('private.bandiBrowser.columns.tender'),
       key: 'title',
       render: row => (
         <div className={styles.tenderCell}>
@@ -72,7 +108,7 @@ export function BandiBrowserPage() {
       width: '35%',
     },
     {
-      label: 'Fonte',
+      label: t('private.bandiBrowser.columns.source'),
       key: 'source',
       render: row => (
         <span className={styles.sourceTag}>
@@ -82,14 +118,14 @@ export function BandiBrowserPage() {
       ),
     },
     {
-      label: 'Categoria',
+      label: t('private.bandiBrowser.columns.category'),
       key: 'category',
       render: row => (
         <span className={styles.categoryTag}>{row.category}</span>
       ),
     },
     {
-      label: 'Rilevanza',
+      label: t('private.bandiBrowser.columns.relevance'),
       key: 'relevanceScore',
       render: row => (
         <div className={styles.relevanceCell}>
@@ -106,7 +142,7 @@ export function BandiBrowserPage() {
       ),
     },
     {
-      label: 'Scadenza',
+      label: t('private.bandiBrowser.columns.deadline'),
       key: 'deadlineAt',
       render: row => (
         <span className={styles.dateCell}>
@@ -116,37 +152,38 @@ export function BandiBrowserPage() {
       ),
     },
     {
-      label: 'Stato',
+      label: t('private.bandiBrowser.columns.status'),
       key: 'status',
-      render: row => (
-        <StatusBadge label={statusConfig[row.status].label} variant={statusConfig[row.status].variant} />
-      ),
+      render: row => {
+        const cfg = statusConfig[row.status] || statusConfig.new
+        return <StatusBadge label={cfg.label} variant={cfg.variant} />
+      },
     },
     {
-      label: 'Azioni',
+      label: t('private.bandiBrowser.columns.actions'),
       render: row => (
         <div className={styles.actionsCell}>
           {row.status === 'new' && (
             <>
-              <button className={styles.saveBtn} onClick={e => { e.stopPropagation(); handleSave(row.id); }} title="Salva come gara">
+              <button className={styles.saveBtn} onClick={e => { e.stopPropagation(); handleSave(row.id); }} title={t('private.bandiBrowser.actions.saveTitle')}>
                 <Icon name="plus" size={14} />
-                <span>Salva</span>
+                <span>{t('private.bandiBrowser.actions.save')}</span>
               </button>
-              <button className={styles.dismissBtn} onClick={e => { e.stopPropagation(); handleDismiss(row.id); }} title="Ignora">
+              <button className={styles.dismissBtn} onClick={e => { e.stopPropagation(); handleDismiss(row.id); }} title={t('private.bandiBrowser.actions.dismiss')}>
                 <Icon name="close" size={14} />
               </button>
             </>
           )}
-          {row.status === 'saved' && (
-            <button className={styles.viewBtn} onClick={e => { e.stopPropagation(); navigate(`/app/tenders/${row.id}`); }} title="Vedi gara">
+          {row.status === 'saved' && row.convertedTenderId && (
+            <button className={styles.viewBtn} onClick={e => { e.stopPropagation(); navigate(`/app/tenders/${row.convertedTenderId}`); }} title={t('private.bandiBrowser.actions.viewTitle')}>
               <Icon name="eye" size={14} />
-              <span>Vedi</span>
+              <span>{t('private.bandiBrowser.actions.view')}</span>
             </button>
           )}
           {row.status === 'dismissed' && (
-            <button className={styles.saveBtn} onClick={e => { e.stopPropagation(); handleSave(row.id); }} title="Ripristina">
+            <button className={styles.saveBtn} onClick={e => { e.stopPropagation(); handleSave(row.id); }} title={t('private.bandiBrowser.actions.restoreTitle')}>
               <Icon name="refresh" size={14} />
-              <span>Ripristina</span>
+              <span>{t('private.bandiBrowser.actions.restore')}</span>
             </button>
           )}
         </div>
@@ -165,19 +202,39 @@ export function BandiBrowserPage() {
   const savedCount = results.filter(r => r.status === 'saved').length
   const dismissedCount = results.filter(r => r.status === 'dismissed').length
 
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <EmptyState
+          icon="alertCircle"
+          title={t('common.error')}
+          message={error.message}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Workspace', to: APP_ROUTES.DASHBOARD },
-        { label: 'Scopri Gare' },
+        { label: t('components.breadcrumbs.workspace'), to: APP_ROUTES.DASHBOARD },
+        { label: t('private.bandiBrowser.title') },
       ]} />
       <PageHeader
-        title="Scopri Gare"
-        subtitle="Bandi e opportunita rilevanti per il tuo business"
+        title={t('private.bandiBrowser.title')}
+        subtitle={t('private.bandiBrowser.subtitle')}
         actions={
-          <SubmitButton variant="secondary" onClick={() => {}} className={styles.refreshBtn}>
+          <SubmitButton variant="secondary" onClick={fetchTenders} className={styles.refreshBtn}>
             <Icon name="refresh" size={16} />
-            <span>Aggiorna</span>
+            <span>{t('private.bandiBrowser.refresh')}</span>
           </SubmitButton>
         }
       />
@@ -187,28 +244,28 @@ export function BandiBrowserPage() {
           <Icon name="inbox" size={20} />
           <div className={styles.statInfo}>
             <span className={styles.statValue}>{newCount}</span>
-            <span className={styles.statLabel}>Nuovi</span>
+            <span className={styles.statLabel}>{t('private.bandiBrowser.stats.new')}</span>
           </div>
         </div>
         <div className={styles.statCard}>
           <Icon name="checkCircle" size={20} />
           <div className={styles.statInfo}>
             <span className={styles.statValue}>{savedCount}</span>
-            <span className={styles.statLabel}>Salvati</span>
+            <span className={styles.statLabel}>{t('private.bandiBrowser.stats.saved')}</span>
           </div>
         </div>
         <div className={styles.statCard}>
           <Icon name="xCircle" size={20} />
           <div className={styles.statInfo}>
             <span className={styles.statValue}>{dismissedCount}</span>
-            <span className={styles.statLabel}>Ignorati</span>
+            <span className={styles.statLabel}>{t('private.bandiBrowser.stats.dismissed')}</span>
           </div>
         </div>
         <div className={styles.statCard}>
           <Icon name="star" size={20} />
           <div className={styles.statInfo}>
-            <span className={styles.statValue}>{Math.round(results.reduce((acc, r) => acc + r.relevanceScore, 0) / results.length)}%</span>
-            <span className={styles.statLabel}>Rilevanza media</span>
+            <span className={styles.statValue}>{results.length ? Math.round(results.reduce((acc, r) => acc + r.relevanceScore, 0) / results.length) : 0}%</span>
+            <span className={styles.statLabel}>{t('private.bandiBrowser.stats.avgRelevance')}</span>
           </div>
         </div>
       </div>
@@ -217,20 +274,20 @@ export function BandiBrowserPage() {
         searchValue={search}
         onSearchChange={setSearch}
         onClear={handleClearFilters}
-        searchPlaceholder="Cerca per titolo o ente..."
+        searchPlaceholder={t('private.bandiBrowser.searchPlaceholder')}
         filters={[
           {
-            placeholder: 'Tutti gli stati',
+            placeholder: t('private.bandiBrowser.allStatuses'),
             value: statusFilter,
             onChange: setStatusFilter,
             options: [
-              { value: 'new', label: 'Nuovo' },
-              { value: 'saved', label: 'Salvato' },
-              { value: 'dismissed', label: 'Ignorato' },
+              { value: 'new', label: t('private.bandiBrowser.statusLabels.new') },
+              { value: 'saved', label: t('private.bandiBrowser.statusLabels.saved') },
+              { value: 'dismissed', label: t('private.bandiBrowser.statusLabels.dismissed') },
             ],
           },
           {
-            placeholder: 'Tutte le categorie',
+            placeholder: t('private.bandiBrowser.allCategories'),
             value: categoryFilter,
             onChange: setCategoryFilter,
             options: categories.map(c => ({ value: c, label: c })),
@@ -244,8 +301,8 @@ export function BandiBrowserPage() {
         emptyState={
           <EmptyState
             icon="search"
-            title="Nessun bando trovato"
-            message="Prova a modificare i filtri o aggiorna i risultati."
+            title={t('private.bandiBrowser.emptyTitle')}
+            message={t('private.bandiBrowser.emptyMessage')}
           />
         }
       />

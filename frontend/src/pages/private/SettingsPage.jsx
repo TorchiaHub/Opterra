@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { SectionCard } from '../../components/cards/SectionCard'
@@ -6,27 +7,10 @@ import { SubmitButton } from '../../components/forms/SubmitButton'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
+import { useAuth } from '../../hooks/useAuth'
 import styles from './SettingsPage.module.css'
 
-const mockProfile = {
-  firstName: 'Marco',
-  lastName: 'Rossi',
-  email: 'marco.rossi@opterra.it',
-  phone: '+39 340 123 4567',
-  role: 'Manager',
-  department: 'Tecnico',
-}
-
-const mockCompany = {
-  name: 'Opterra S.r.l.',
-  vat: 'IT12345678901',
-  address: 'Via Roma 42, Milano',
-  pec: 'opterra@pec.it',
-  website: 'https://opterra.it',
-  size: '11-50',
-}
-
-const mockNotifications = {
+const defaultNotifications = {
   emailTenderDeadline: true,
   emailTaskAssigned: true,
   emailNewTender: false,
@@ -38,10 +22,26 @@ const mockNotifications = {
 }
 
 export function SettingsPage() {
+  const { t } = useTranslation()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
-  const [profile, setProfile] = useState(mockProfile)
-  const [company, setCompany] = useState(mockCompany)
-  const [notifications, setNotifications] = useState(mockNotifications)
+  const [profile, setProfile] = useState({
+    firstName: user?.firstName || user?.name?.split(' ')[0] || '',
+    lastName: user?.lastName || user?.name?.split(' ').slice(1).join(' ') || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    role: user?.role || '',
+    department: user?.department || user?.group || '',
+  })
+  const [company, setCompany] = useState({
+    name: user?.company?.name || '',
+    vat: user?.company?.vat || '',
+    address: user?.company?.address || '',
+    pec: user?.company?.pec || '',
+    website: user?.company?.website || '',
+    size: user?.company?.size || '',
+  })
+  const [notifications, setNotifications] = useState(defaultNotifications)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -59,19 +59,19 @@ export function SettingsPage() {
   }
 
   const tabs = [
-    { id: 'profile', label: 'Profilo', icon: 'user' },
-    { id: 'company', label: 'Azienda', icon: 'building' },
-    { id: 'notifications', label: 'Notifiche', icon: 'notification' },
-    { id: 'security', label: 'Sicurezza', icon: 'shield' },
+    { id: 'profile', label: t('private.settings.tabs.profile'), icon: 'user' },
+    { id: 'company', label: t('private.settings.tabs.company'), icon: 'building' },
+    { id: 'notifications', label: t('private.settings.tabs.notifications'), icon: 'notification' },
+    { id: 'security', label: t('private.settings.tabs.security'), icon: 'shield' },
   ]
 
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Workspace', to: APP_ROUTES.DASHBOARD },
-        { label: 'Impostazioni' },
+        { label: t('components.breadcrumbs.workspace'), to: APP_ROUTES.DASHBOARD },
+        { label: t('private.settings.title') },
       ]} />
-      <PageHeader title="Impostazioni" subtitle="Gestisci il tuo profilo e le preferenze" />
+      <PageHeader title={t('private.settings.title')} subtitle={t('private.settings.subtitle')} />
 
       <div className={styles.layout}>
         <div className={styles.sidebar}>
@@ -90,23 +90,23 @@ export function SettingsPage() {
 
         <div className={styles.content}>
           {activeTab === 'profile' && (
-            <SectionCard title="Profilo Utente" actions={
+            <SectionCard title={t('private.settings.profile.sectionTitle')} actions={
               <div className={styles.saveActions}>
                 {saved && (
                   <span className={styles.savedIndicator}>
                     <Icon name="checkCircle" size={16} />
-                    Salvato
+                    {t('common.saved')}
                   </span>
                 )}
                 <SubmitButton variant="primary" onClick={handleSave} loading={saving}>
                   <Icon name="check" size={16} />
-                  <span>Salva</span>
+                  <span>{t('common.save')}</span>
                 </SubmitButton>
               </div>
             }>
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Nome</label>
+                  <label className={styles.label}>{t('private.settings.profile.firstName')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="user" size={16} />
                     <input
@@ -118,7 +118,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Cognome</label>
+                  <label className={styles.label}>{t('private.settings.profile.lastName')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="user" size={16} />
                     <input
@@ -130,7 +130,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Email</label>
+                  <label className={styles.label}>{t('private.settings.profile.email')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="mail" size={16} />
                     <input
@@ -142,7 +142,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Telefono</label>
+                  <label className={styles.label}>{t('private.settings.profile.phone')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="phone" size={16} />
                     <input
@@ -154,14 +154,14 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Ruolo</label>
+                  <label className={styles.label}>{t('private.settings.profile.role')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="briefcase" size={16} />
                     <input type="text" className={styles.input} value={profile.role} disabled />
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Dipartimento</label>
+                  <label className={styles.label}>{t('private.settings.profile.department')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="layers" size={16} />
                     <input type="text" className={styles.input} value={profile.department} disabled />
@@ -172,23 +172,23 @@ export function SettingsPage() {
           )}
 
           {activeTab === 'company' && (
-            <SectionCard title="Dati Azienda" actions={
+            <SectionCard title={t('private.settings.company.sectionTitle')} actions={
               <div className={styles.saveActions}>
                 {saved && (
                   <span className={styles.savedIndicator}>
                     <Icon name="checkCircle" size={16} />
-                    Salvato
+                    {t('common.saved')}
                   </span>
                 )}
                 <SubmitButton variant="primary" onClick={handleSave} loading={saving}>
                   <Icon name="check" size={16} />
-                  <span>Salva</span>
+                  <span>{t('common.save')}</span>
                 </SubmitButton>
               </div>
             }>
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Ragione Sociale</label>
+                  <label className={styles.label}>{t('private.settings.company.companyName')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="building" size={16} />
                     <input
@@ -200,7 +200,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Partita IVA</label>
+                  <label className={styles.label}>{t('private.settings.company.vat')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="tag" size={16} />
                     <input
@@ -212,7 +212,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Indirizzo</label>
+                  <label className={styles.label}>{t('private.settings.company.address')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="mapPin" size={16} />
                     <input
@@ -224,7 +224,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>PEC</label>
+                  <label className={styles.label}>{t('private.settings.company.pec')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="mail" size={16} />
                     <input
@@ -236,7 +236,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Sito Web</label>
+                  <label className={styles.label}>{t('private.settings.company.website')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="globe" size={16} />
                     <input
@@ -248,7 +248,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Dimensione</label>
+                  <label className={styles.label}>{t('private.settings.company.size')}</label>
                   <div className={styles.inputWrapper}>
                     <Icon name="users" size={16} />
                     <select
@@ -256,10 +256,9 @@ export function SettingsPage() {
                       value={company.size}
                       onChange={e => setCompany({ ...company, size: e.target.value })}
                     >
-                      <option value="1-10">1-10 dipendenti</option>
-                      <option value="11-50">11-50 dipendenti</option>
-                      <option value="51-200">51-200 dipendenti</option>
-                      <option value="200+">200+ dipendenti</option>
+                      {t('private.settings.company.sizeOptions', { returnObjects: true }).map((opt, i) => (
+                        <option key={i} value={['1-10', '11-50', '51-200', '200+'][i]}>{opt}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -268,30 +267,30 @@ export function SettingsPage() {
           )}
 
           {activeTab === 'notifications' && (
-            <SectionCard title="Preferenze Notifiche" actions={
+            <SectionCard title={t('private.settings.notifications.sectionTitle')} actions={
               <div className={styles.saveActions}>
                 {saved && (
                   <span className={styles.savedIndicator}>
                     <Icon name="checkCircle" size={16} />
-                    Salvato
+                    {t('common.saved')}
                   </span>
                 )}
                 <SubmitButton variant="primary" onClick={handleSave} loading={saving}>
                   <Icon name="check" size={16} />
-                  <span>Salva</span>
+                  <span>{t('common.save')}</span>
                 </SubmitButton>
               </div>
             }>
               <div className={styles.notificationsSection}>
                 <h4 className={styles.notificationsSectionTitle}>
                   <Icon name="mail" size={16} />
-                  Email
+                  {t('private.settings.notifications.email.title')}
                 </h4>
                 <div className={styles.toggleList}>
                   {[
-                    { key: 'emailTenderDeadline', label: 'Scadenze gare imminenti', desc: 'Ricevi un avviso quando una gara sta per scadere' },
-                    { key: 'emailTaskAssigned', label: 'Nuovi task assegnati', desc: 'Ricevi una notifica quando ti viene assegnato un task' },
-                    { key: 'emailNewTender', label: 'Nuove gare disponibili', desc: 'Ricevi aggiornamenti su nuove gare rilevanti' },
+                    { key: 'emailTenderDeadline', label: t('private.settings.notifications.email.deadline.label'), desc: t('private.settings.notifications.email.deadline.description') },
+                    { key: 'emailTaskAssigned', label: t('private.settings.notifications.email.newTask.label'), desc: t('private.settings.notifications.email.newTask.description') },
+                    { key: 'emailNewTender', label: t('private.settings.notifications.email.newTenders.label'), desc: t('private.settings.notifications.email.newTenders.description') },
                   ].map(item => (
                     <div key={item.key} className={styles.toggleItem}>
                       <div className={styles.toggleInfo}>
@@ -312,13 +311,13 @@ export function SettingsPage() {
               <div className={styles.notificationsSection}>
                 <h4 className={styles.notificationsSectionTitle}>
                   <Icon name="notification" size={16} />
-                  Push
+                  {t('private.settings.notifications.push.title')}
                 </h4>
                 <div className={styles.toggleList}>
                   {[
-                    { key: 'pushTenderDeadline', label: 'Scadenze gare imminenti', desc: 'Notifica push quando una gara sta per scadere' },
-                    { key: 'pushTaskAssigned', label: 'Nuovi task assegnati', desc: 'Notifica push per nuovi task' },
-                    { key: 'pushNewTender', label: 'Nuove gare disponibili', desc: 'Notifica push per nuove gare' },
+                    { key: 'pushTenderDeadline', label: t('private.settings.notifications.push.deadline.label'), desc: t('private.settings.notifications.push.deadline.description') },
+                    { key: 'pushTaskAssigned', label: t('private.settings.notifications.push.newTask.label'), desc: t('private.settings.notifications.push.newTask.description') },
+                    { key: 'pushNewTender', label: t('private.settings.notifications.push.newTenders.label'), desc: t('private.settings.notifications.push.newTenders.description') },
                   ].map(item => (
                     <div key={item.key} className={styles.toggleItem}>
                       <div className={styles.toggleInfo}>
@@ -339,12 +338,12 @@ export function SettingsPage() {
               <div className={styles.notificationsSection}>
                 <h4 className={styles.notificationsSectionTitle}>
                   <Icon name="inbox" size={16} />
-                  Digest
+                  {t('private.settings.notifications.digest.title')}
                 </h4>
                 <div className={styles.toggleList}>
                   {[
-                    { key: 'digestDaily', label: 'Digest giornaliero', desc: 'Riepilogo giornaliero delle attivita' },
-                    { key: 'digestWeekly', label: 'Digest settimanale', desc: 'Riepilogo settimanale delle attivita' },
+                    { key: 'digestDaily', label: t('private.settings.notifications.digest.daily.label'), desc: t('private.settings.notifications.digest.daily.description') },
+                    { key: 'digestWeekly', label: t('private.settings.notifications.digest.weekly.label'), desc: t('private.settings.notifications.digest.weekly.description') },
                   ].map(item => (
                     <div key={item.key} className={styles.toggleItem}>
                       <div className={styles.toggleInfo}>
@@ -365,45 +364,45 @@ export function SettingsPage() {
           )}
 
           {activeTab === 'security' && (
-            <SectionCard title="Sicurezza">
+            <SectionCard title={t('private.settings.security.sectionTitle')}>
               <div className={styles.securitySection}>
                 <div className={styles.securityItem}>
                   <div className={styles.securityInfo}>
-                    <span className={styles.securityLabel}>Password</span>
-                    <span className={styles.securityDesc}>Ultimo aggiornamento 30 giorni fa</span>
+                    <span className={styles.securityLabel}>{t('private.settings.security.password.label')}</span>
+                    <span className={styles.securityDesc}>{t('private.settings.security.password.description')}</span>
                   </div>
                   <SubmitButton variant="secondary" onClick={() => {}}>
                     <Icon name="lock" size={16} />
-                    <span>Modifica</span>
+                    <span>{t('private.settings.security.password.button')}</span>
                   </SubmitButton>
                 </div>
                 <div className={styles.securityItem}>
                   <div className={styles.securityInfo}>
-                    <span className={styles.securityLabel}>Autenticazione a due fattori (2FA)</span>
-                    <span className={styles.securityDesc}>Aumenta la sicurezza del tuo account</span>
+                    <span className={styles.securityLabel}>{t('private.settings.security.twoFactor.label')}</span>
+                    <span className={styles.securityDesc}>{t('private.settings.security.twoFactor.description')}</span>
                   </div>
                   <div className={styles.securityStatus}>
-                    <StatusBadge label="Attiva" variant="success" />
+                    <StatusBadge label={t('private.settings.security.twoFactor.badge')} variant="success" />
                   </div>
                 </div>
                 <div className={styles.securityItem}>
                   <div className={styles.securityInfo}>
-                    <span className={styles.securityLabel}>Sessioni attive</span>
-                    <span className={styles.securityDesc}>3 dispositivi connessi</span>
+                    <span className={styles.securityLabel}>{t('private.settings.security.sessions.label')}</span>
+                    <span className={styles.securityDesc}>{t('private.settings.security.sessions.description')}</span>
                   </div>
                   <SubmitButton variant="secondary" onClick={() => {}}>
                     <Icon name="eye" size={16} />
-                    <span>Gestisci</span>
+                    <span>{t('private.settings.security.sessions.button')}</span>
                   </SubmitButton>
                 </div>
                 <div className={styles.securityItem}>
                   <div className={styles.securityInfo}>
-                    <span className={styles.securityLabel}>API Key</span>
-                    <span className={styles.securityDesc}>Usata per integrazioni esterne</span>
+                    <span className={styles.securityLabel}>{t('private.settings.security.apiKey.label')}</span>
+                    <span className={styles.securityDesc}>{t('private.settings.security.apiKey.description')}</span>
                   </div>
                   <SubmitButton variant="secondary" onClick={() => {}}>
                     <Icon name="lock" size={16} />
-                    <span>Rigenera</span>
+                    <span>{t('private.settings.security.apiKey.button')}</span>
                   </SubmitButton>
                 </div>
               </div>

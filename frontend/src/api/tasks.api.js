@@ -1,6 +1,6 @@
 import client from './client'
 
-export async function getTasksByTender(tenderId) {
+export async function getTasks(tenderId) {
   const { data } = await client.get(`/tenders/${tenderId}/tasks`)
   return data.data
 }
@@ -10,12 +10,12 @@ export async function createTask(tenderId, payload) {
   return data.data
 }
 
-export async function updateTask(taskId, payload) {
+export async function updateTask(tenderId, taskId, payload) {
   const { data } = await client.patch(`/tenders/tasks/${taskId}`, payload)
   return data.data
 }
 
-export async function deleteTask(taskId) {
+export async function deleteTask(tenderId, taskId) {
   const { data } = await client.delete(`/tenders/tasks/${taskId}`)
   return data.data
 }

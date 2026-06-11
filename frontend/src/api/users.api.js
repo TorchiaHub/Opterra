@@ -34,3 +34,8 @@ export async function addGroupMember(groupId, payload) {
   const { data } = await client.post(`/users/groups/${groupId}/members`, payload)
   return data.data
 }
+
+export async function createUser(payload) {
+  const { data } = await client.post('/users', payload)
+  return data.data
+}

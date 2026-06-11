@@ -4,7 +4,7 @@ VALUES (1, 'TenderFlow Admin', 'tenderflow-admin', 'active')
 ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
 
 INSERT INTO `users` (`id`, `tenant_id`, `email`, `password_hash`, `first_name`, `last_name`, `status`)
-VALUES (1, 1, 'admin@tenderflow.app', '$2b$12$5sK5uW.iWNAK84Y7lwA44O1tpE.Y9AWTHkPaCn/.ezs3FyvhPkcH6', 'Admin', 'TenderFlow', 'active')
+VALUES (1, 1, 'admin@tenderflow.app', '$2b$12$QdkMUU9O2QUWLr9ddnyyiOZT/fma8X3K9v1wVCPzIbaITmNree38q', 'Admin', 'TenderFlow', 'active')
 ON DUPLICATE KEY UPDATE `email` = VALUES(`email`);
 
 INSERT INTO `user_roles` (`user_id`, `role_id`, `tenant_id`)

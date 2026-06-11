@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { UIContext } from '../../../context/UIContext'
 import { useAuth } from '../../../hooks/useAuth'
 import { usePermissions } from '../../../hooks/usePermissions'
@@ -7,37 +8,38 @@ import { APP_ROUTES, ROLES } from '../../../utils/constants'
 import Icon from '../../Icon'
 import styles from './Sidebar.module.css'
 
-const publicNav = [
-  { to: APP_ROUTES.HOME, label: 'Home', icon: 'home' },
-  { to: APP_ROUTES.FEATURES, label: 'Funzionalità', icon: 'zap' },
-  { to: APP_ROUTES.PRICING, label: 'Prezzi', icon: 'tag' },
-  { to: APP_ROUTES.DEMO, label: 'Richiedi Demo', icon: 'mail' },
-  { to: APP_ROUTES.LOGIN, label: 'Accedi', icon: 'lock' },
-]
-
-const tenantNav = [
-  { to: APP_ROUTES.DASHBOARD, label: 'Dashboard', icon: 'dashboard', section: 'Workspace' },
-  { to: APP_ROUTES.TENDERS, label: 'Gare', icon: 'tenders', section: 'Workspace' },
-  { to: APP_ROUTES.DISCOVERY, label: 'Scopri Bandi', icon: 'search', section: 'Workspace' },
-  { to: APP_ROUTES.USERS, label: 'Utenti', icon: 'users', section: 'Gestione', role: ROLES.MANAGER },
-  { to: APP_ROUTES.AUDIT, label: 'Audit Log', icon: 'audit', section: 'Gestione', role: ROLES.MANAGER },
-  { to: APP_ROUTES.SETTINGS, label: 'Impostazioni', icon: 'settings', section: 'Gestione' },
-]
-
-const adminNav = [
-  { to: APP_ROUTES.ADMIN_DASHBOARD, label: 'Dashboard', icon: 'dashboard', section: 'Admin' },
-  { to: APP_ROUTES.ADMIN_TENANTS, label: 'Tenant', icon: 'building', section: 'Admin' },
-  { to: APP_ROUTES.ADMIN_SUBSCRIPTIONS, label: 'Abbonamenti', icon: 'tag', section: 'Admin' },
-  { to: APP_ROUTES.ADMIN_AUDIT, label: 'Audit Globale', icon: 'audit', section: 'Admin' },
-]
-
 export function Sidebar() {
+  const { t } = useTranslation()
   const { sidebarCollapsed, toggleSidebar } = useContext(UIContext)
   const { user, isAuthenticated, logout } = useAuth()
   const { isSuperadmin } = usePermissions()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const isPublic = !isAuthenticated
+
+  const publicNav = [
+    { to: APP_ROUTES.HOME, label: t('nav.home'), icon: 'home' },
+    { to: APP_ROUTES.FEATURES, label: t('nav.features'), icon: 'zap' },
+    { to: APP_ROUTES.PRICING, label: t('nav.pricing'), icon: 'tag' },
+    { to: APP_ROUTES.DEMO, label: t('nav.demo'), icon: 'mail' },
+    { to: APP_ROUTES.LOGIN, label: t('nav.login'), icon: 'lock' },
+  ]
+
+  const tenantNav = [
+    { to: APP_ROUTES.DASHBOARD, label: t('nav.dashboard'), icon: 'dashboard', section: t('components.breadcrumbs.workspace') },
+    { to: APP_ROUTES.TENDERS, label: t('nav.tenders'), icon: 'tenders', section: t('components.breadcrumbs.workspace') },
+    { to: APP_ROUTES.DISCOVERY, label: t('nav.discoverTenders'), icon: 'search', section: t('components.breadcrumbs.workspace') },
+    { to: APP_ROUTES.USERS, label: t('nav.users'), icon: 'users', section: t('components.breadcrumbs.management'), role: ROLES.MANAGER },
+    { to: APP_ROUTES.AUDIT, label: t('nav.auditLog'), icon: 'audit', section: t('components.breadcrumbs.management'), role: ROLES.MANAGER },
+    { to: APP_ROUTES.SETTINGS, label: t('nav.settings'), icon: 'settings', section: t('components.breadcrumbs.management') },
+  ]
+
+  const adminNav = [
+    { to: APP_ROUTES.ADMIN_DASHBOARD, label: t('nav.adminDashboard'), icon: 'dashboard', section: t('components.breadcrumbs.admin') },
+    { to: APP_ROUTES.ADMIN_TENANTS, label: t('nav.tenants'), icon: 'building', section: t('components.breadcrumbs.admin') },
+    { to: APP_ROUTES.ADMIN_SUBSCRIPTIONS, label: t('nav.subscriptions'), icon: 'tag', section: t('components.breadcrumbs.admin') },
+    { to: APP_ROUTES.ADMIN_AUDIT, label: t('nav.globalAudit'), icon: 'audit', section: t('components.breadcrumbs.admin') },
+  ]
 
   function getInitials(name) {
     if (!name) return '?'
@@ -111,7 +113,7 @@ export function Sidebar() {
               <div className={styles.userName}>{user?.firstName} {user?.lastName}</div>
               <div className={styles.userRole}>{user?.role}</div>
             </div>
-            <button className={styles.logoutBtn} onClick={logout} title="Logout">
+            <button className={styles.logoutBtn} onClick={logout} title={t('nav.logout')}>
               <Icon name="logout" size={16} />
             </button>
           </div>

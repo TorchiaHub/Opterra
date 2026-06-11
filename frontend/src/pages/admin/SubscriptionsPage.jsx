@@ -1,25 +1,52 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
 import { SectionCard } from '../../components/cards/SectionCard'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { Loader } from '../../components/feedback/Loader'
 import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
+import { getPlans } from '../../api/admin.api'
 import styles from './SubscriptionsPage.module.css'
 
-const mockPlans = [
-  { id: 1, name: 'Starter', price: 29, users: 3, tenders: 10, features: ['Base', 'Email'], status: 'active', description: 'Per piccoli team' },
-  { id: 2, name: 'Professional', price: 99, users: 15, tenders: 50, features: ['Base', 'Email', 'AI', 'Report'], status: 'active', description: 'Per team in crescita' },
-  { id: 3, name: 'Enterprise', price: 299, users: 50, tenders: 200, features: ['Tutto', 'API', 'Supporto'], status: 'active', description: 'Per grandi aziende' },
-  { id: 4, name: 'Free Trial', price: 0, users: 1, tenders: 3, features: ['Base'], status: 'disabled', description: 'Prova gratuita 14gg' },
-]
-
 export function SubscriptionsPage() {
-  const [plans, setPlans] = useState(mockPlans)
-  const [loading] = useState(false)
+  const { t } = useTranslation()
+  const [plans, setPlans] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    async function fetchPlans() {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await getPlans()
+        const priceByCode = { free: 0, pro: 49, enterprise: 199 }
+        setPlans((Array.isArray(data) ? data : []).map(plan => ({
+          id: plan.id,
+          name: plan.name,
+          description: plan.code,
+          price: priceByCode[plan.code] ?? 0,
+          users: plan.max_users,
+          tenders: plan.max_tenders,
+          features: [
+            `${plan.max_storage_mb} MB storage`,
+            `${plan.max_ai_requests_month} AI req/mese`,
+          ],
+          status: 'active',
+        })))
+      } catch (err) {
+        setError(err.message || t('admin.subscriptions.loadError'))
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPlans()
+  }, [t])
 
   const toggleStatus = (id) => {
     setPlans(prev => prev.map(p =>
@@ -28,7 +55,7 @@ export function SubscriptionsPage() {
   }
 
   const columns = [
-    { label: 'Piano', render: row => (
+    { label: t('admin.subscriptions.columns.plan'), render: row => (
       <div className={styles.planCell}>
         <span className={styles.planIcon}>
           <Icon name="layers" size={16} />
@@ -39,24 +66,24 @@ export function SubscriptionsPage() {
         </div>
       </div>
     )},
-    { label: 'Prezzo', render: row => (
+    { label: t('admin.subscriptions.columns.price'), render: row => (
       <span className={styles.price}>
-        {row.price === 0 ? 'Gratuito' : `€${row.price}/mese`}
+        {row.price === 0 ? t('admin.subscriptions.free') : t('admin.subscriptions.pricePerMonth', { price: row.price })}
       </span>
     )},
-    { label: 'Utenti', render: row => (
+    { label: t('admin.subscriptions.columns.users'), render: row => (
       <span className={styles.countCell}>
         <Icon name="users" size={14} />
         {row.users}
       </span>
     )},
-    { label: 'Gare', render: row => (
+    { label: t('admin.subscriptions.columns.tenders'), render: row => (
       <span className={styles.countCell}>
         <Icon name="tenders" size={14} />
         {row.tenders}
       </span>
     )},
-    { label: 'Funzionalità', render: row => (
+    { label: t('admin.subscriptions.columns.features'), render: row => (
       <div className={styles.features}>
         {row.features.map((f, i) => (
           <span key={i} className={styles.featureTag}>
@@ -66,61 +93,78 @@ export function SubscriptionsPage() {
         ))}
       </div>
     )},
-    { label: 'Stato', render: row => (
+    { label: t('admin.subscriptions.columns.status'), render: row => (
       <StatusBadge
-        label={row.status === 'active' ? 'Attivo' : 'Disabilitato'}
+        label={row.status === 'active' ? t('admin.subscriptions.status.active') : t('admin.subscriptions.status.disabled')}
         variant={row.status === 'active' ? 'success' : 'neutral'}
       />
     )},
-    { label: 'Azioni', render: row => (
+    { label: t('admin.subscriptions.columns.actions'), render: row => (
       <div className={styles.actionsCell}>
-        <button className={styles.actionBtn} type="button" title="Modifica piano">
+        <button className={styles.actionBtn} type="button" title={t('admin.subscriptions.actionTitles.editPlan')}>
           <Icon name="edit" size={16} />
         </button>
         <button
           className={`${styles.toggleBtn} ${row.status === 'active' ? styles.toggleActive : styles.toggleDisabled}`}
           type="button"
           onClick={() => toggleStatus(row.id)}
-          title={row.status === 'active' ? 'Disabilita' : 'Attiva'}
+          title={row.status === 'active' ? t('admin.subscriptions.actionTitles.disable') : t('admin.subscriptions.actionTitles.enable')}
         >
           <Icon name={row.status === 'active' ? 'circleCheck' : 'circleX'} size={16} />
-          <span>{row.status === 'active' ? 'Attivo' : 'Disabilitato'}</span>
+          <span>{row.status === 'active' ? t('admin.subscriptions.status.active') : t('admin.subscriptions.status.disabled')}</span>
         </button>
       </div>
     )},
   ]
 
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <Breadcrumbs items={[
+          { label: t('components.breadcrumbs.admin'), to: APP_ROUTES.ADMIN_DASHBOARD },
+          { label: t('admin.subscriptions.title') },
+        ]} />
+        <PageHeader
+          title={t('admin.subscriptions.title')}
+          subtitle={t('admin.subscriptions.subtitle')}
+        />
+        <EmptyState
+          title={t('admin.subscriptions.loadError')}
+          message={error}
+          icon="alertCircle"
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Admin', to: APP_ROUTES.ADMIN_DASHBOARD },
-        { label: 'Subscription' },
+        { label: t('components.breadcrumbs.admin'), to: APP_ROUTES.ADMIN_DASHBOARD },
+        { label: t('admin.subscriptions.title') },
       ]} />
       <PageHeader
-        title="Subscription"
-        subtitle="Gestione dei piani e dei prezzi"
+        title={t('admin.subscriptions.title')}
+        subtitle={t('admin.subscriptions.subtitle')}
         actions={
           <SubmitButton variant="primary" onClick={() => {}}>
             <Icon name="plus" size={16} />
-            <span>Nuovo Piano</span>
+            <span>{t('admin.subscriptions.newPlan')}</span>
           </SubmitButton>
         }
       />
 
-      <SectionCard title="Piani disponibili" noPadding>
+      <SectionCard title={t('admin.subscriptions.availablePlans')} noPadding>
         {loading ? (
-          <div className={styles.loadingBox}>
-            <Icon name="refresh" size={32} className={styles.loadingIcon} />
-            <span>Caricamento piani...</span>
-          </div>
+          <Loader label={t('admin.subscriptions.loadingPlans')} />
         ) : (
           <DataTable
             columns={columns}
             data={plans}
             emptyState={
               <EmptyState
-                title="Nessun piano disponibile"
-                message="Crea un nuovo piano per iniziare."
+                title={t('admin.subscriptions.emptyTitle')}
+                message={t('admin.subscriptions.emptyMessage')}
                 icon="inbox"
               />
             }

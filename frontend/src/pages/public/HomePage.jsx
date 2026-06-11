@@ -1,25 +1,37 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import Icon from '../../components/Icon.jsx';
 import styles from './HomePage.module.css';
 
-const features = [
-  { icon: 'search', title: 'AI-Powered Search', description: 'Find the perfect tenders instantly with our intelligent matching engine.' },
-  { icon: 'robot', title: 'Smart Automation', description: 'Automate repetitive tasks and focus on winning more contracts.' },
-  { icon: 'shield', title: 'Secure & Compliant', description: 'Enterprise-grade security with full audit trails and compliance.' },
-  { icon: 'globe', title: 'Global Coverage', description: 'Access tenders from across Europe and beyond in one platform.' },
-  { icon: 'zap', title: 'Real-Time Alerts', description: 'Never miss an opportunity with instant notifications and alerts.' },
-  { icon: 'layers', title: 'Advanced Analytics', description: 'Track performance, insights, and trends with powerful dashboards.' },
+const featureKeys = [
+  { icon: 'search', key: 'search' },
+  { icon: 'robot', key: 'automation' },
+  { icon: 'shield', key: 'security' },
+  { icon: 'globe', key: 'coverage' },
+  { icon: 'zap', key: 'alerts' },
+  { icon: 'layers', key: 'analytics' },
 ];
 
-const LOGO_SIZE = 48;
-
 export default function HomePage() {
+  const { t, i18n } = useTranslation();
+  const [lang, setLang] = useState(i18n.language);
+
+  const handleLangToggle = () => {
+    const next = i18n.language === 'it' ? 'en' : 'it';
+    i18n.changeLanguage(next);
+    setLang(next);
+  };
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroBackground}>
           <div className={styles.gridPattern} />
         </div>
+        <button className={styles.langToggle} onClick={handleLangToggle}>
+          {i18n.language === 'it' ? 'EN' : 'IT'}
+        </button>
         <div className={styles.heroContent}>
           <div className={styles.logoFloat}>
             <img src="/opterra-logo.png" alt="Opterra" className={styles.logoImg} />
@@ -27,19 +39,18 @@ export default function HomePage() {
           <h1 className={styles.heroTitle}>
             <span className={styles.heroBrand}>Opterra</span>
             <br />
-            <span className={styles.heroSubtitle}>AI-Powered Tender Intelligence</span>
+            <span className={styles.heroSubtitle}>{t('public.home.heroSubtitle')}</span>
           </h1>
           <p className={styles.heroDescription}>
-            Discover, track, and win public tenders with the power of artificial intelligence.
-            The modern platform built for procurement professionals.
+            {t('public.home.heroDescription')}
           </p>
           <div className={styles.heroButtons}>
             <Link to="/register" className={styles.btnPrimary}>
-              Get Started Free
+              {t('public.home.getStarted')}
               <Icon name="arrowRight" size={18} className={styles.btnIcon} />
             </Link>
             <Link to="/demo" className={styles.btnSecondary}>
-              Request a Demo
+              {t('public.home.requestDemo')}
               <Icon name="calendar" size={18} className={styles.btnIcon} />
             </Link>
           </div>
@@ -52,15 +63,15 @@ export default function HomePage() {
       <section className={styles.features}>
         <div className={styles.container}>
           <div className={styles.featuresHeader}>
-            <h2 className={styles.featuresTitle}>Why Choose Opterra?</h2>
+            <h2 className={styles.featuresTitle}>{t('public.home.whyChoose')}</h2>
             <p className={styles.featuresSubtitle}>
-              Everything you need to find and win the best public tenders
+              {t('public.home.whyChooseSub')}
             </p>
           </div>
           <div className={styles.featuresGrid}>
-            {features.map((f, i) => (
+            {featureKeys.map((f, i) => (
               <div
-                key={f.title}
+                key={f.key}
                 className={styles.featureCard}
                 style={{ animationDelay: `${i * 0.1}s` }}
               >
@@ -68,8 +79,8 @@ export default function HomePage() {
                 <div className={styles.featureIcon}>
                   <Icon name={f.icon} size={28} />
                 </div>
-                <h3 className={styles.featureTitle}>{f.title}</h3>
-                <p className={styles.featureDesc}>{f.description}</p>
+                <h3 className={styles.featureTitle}>{t(`public.home.features.${f.key}.title`)}</h3>
+                <p className={styles.featureDesc}>{t(`public.home.features.${f.key}.description`)}</p>
               </div>
             ))}
           </div>
@@ -84,12 +95,12 @@ export default function HomePage() {
               <span className={styles.footerBrandName}>Opterra</span>
             </div>
             <div className={styles.footerLinks}>
-              <Link to="/features">Features</Link>
-              <Link to="/pricing">Pricing</Link>
-              <Link to="/demo">Demo</Link>
-              <Link to="/login">Login</Link>
+              <Link to="/features">{t('nav.features')}</Link>
+              <Link to="/pricing">{t('nav.pricing')}</Link>
+              <Link to="/demo">{t('nav.demo')}</Link>
+              <Link to="/login">{t('nav.login')}</Link>
             </div>
-            <p className={styles.footerCopy}>2026 Opterra. All rights reserved.</p>
+            <p className={styles.footerCopy}>{t('public.home.copyright')}</p>
           </div>
         </div>
       </footer>

@@ -1,5 +1,9 @@
 function resolveTenant(req, res, next) {
   if (!req.user || !req.user.tenantId) {
+    if (req.user && req.user.role === 'superadmin') {
+      req.tenantId = null
+      return next()
+    }
     return res.status(401).json({
       success: false,
       error: {

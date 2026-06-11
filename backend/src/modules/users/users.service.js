@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt'
 import * as queries from './users.queries.js'
 import logger from '../../config/logger.js'
 import { log as auditLog } from '../audit/audit.service.js'
@@ -61,6 +62,26 @@ async function removeUser(userId, actorId, tenantId, req) {
   }
 }
 
+async function createUser(tenantId, body, actorId, req) {
+  const { email, firstName, lastName, password, roleCode } = body
+
+  const existing = await queries.findUserByEmailInTenant(email, tenantId)
+  if (existing) {
+    throw Object.assign(new Error('Email già in uso.'), {
+      statusCode: 422,
+      code: 'VALIDATION_ERROR',
+    })
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12)
+  const user = await queries.insertUser(tenantId, email, passwordHash, firstName, lastName)
+  await queries.assignUserRole(user.id, roleCode, tenantId)
+
+  logger.info('User created', { userId: user.id, email, roleCode, tenantId, actorId })
+  auditLog('user.created', 'user', user.id, actorId, tenantId, { email, roleCode }, req)
+  return user
+}
+
 async function inviteUser(tenantId, email, roleCode, createdBy, req) {
   const result = await queries.createInvitation({
     tenantId,
@@ -83,7 +104,7 @@ async function createGroup(tenantId, name, description) {
   return group
 }
 
-async function addMemberToGroup(groupId, userId, tenantId) {
+async function addGroupMember(groupId, userId, tenantId) {
   const result = await queries.addGroupMember(groupId, userId, tenantId)
   if (result.alreadyMember) {
     throw Object.assign(new Error('Utente già membro del gruppo.'), {
@@ -99,8 +120,9 @@ export {
   getUserDetail,
   changeRole,
   removeUser,
+  createUser,
   inviteUser,
   listGroups,
   createGroup,
-  addMemberToGroup,
+  addGroupMember,
 }

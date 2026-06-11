@@ -18,6 +18,9 @@ export async function refreshToken() {
   const refreshToken = localStorage.getItem('tenderflow_refresh_token')
   const { data } = await client.post('/auth/refresh', { refreshToken })
   localStorage.setItem('tenderflow_access_token', data.data.accessToken)
+  if (data.data.refreshToken) {
+    localStorage.setItem('tenderflow_refresh_token', data.data.refreshToken)
+  }
   return data.data
 }
 
@@ -32,6 +35,6 @@ export async function logout() {
 }
 
 export async function getMe() {
-  const { data } = await client.get('/me/tenant')
+  const { data } = await client.get('/auth/me')
   return data.data
 }

@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Icon from '../../components/Icon.jsx';
 import styles from './NotFoundPage.module.css';
 
 export default function NotFoundPage() {
+  const { t } = useTranslation();
+
   return (
     <div className={styles.page}>
       <div className={styles.gridPattern} />
@@ -14,13 +17,13 @@ export default function NotFoundPage() {
           </div>
           <span className={styles.number}>4</span>
         </div>
-        <h1 className={styles.title}>Page not found</h1>
+        <h1 className={styles.title}>{t('public.notFound.title')}</h1>
         <p className={styles.description}>
-          The page you're looking for doesn't exist or has been moved.
+          {t('public.notFound.description')}
         </p>
         <Link to="/" className={styles.backBtn}>
           <Icon name="arrowLeft" size={18} />
-          Back to Home
+          {t('public.notFound.backHome')}
         </Link>
       </div>
     </div>

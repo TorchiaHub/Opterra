@@ -8,5 +8,6 @@ router.post('/register', controller.register)
 router.post('/login', controller.login)
 router.post('/refresh', controller.refresh)
 router.post('/logout', verifyToken, controller.logout)
+router.get('/me', verifyToken, controller.me)
 
 export default router

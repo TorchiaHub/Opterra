@@ -1,56 +1,107 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
 import { FilterBar } from '../../components/tables/FilterBar'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { Loader } from '../../components/feedback/Loader'
 import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
+import { getAuditLogs, exportAuditLogs } from '../../api/audit.api'
 import styles from './AuditLogPage.module.css'
 
-const mockLogs = [
-  { id: 1, user: 'Marco Rossi', email: 'marco.rossi@opterra.it', action: 'create', resource: 'Tender', resourceName: 'Fornitura software procurement', createdAt: '2026-06-10T14:30:00Z', ip: '192.168.1.10' },
-  { id: 2, user: 'Laura Bianchi', email: 'laura.bianchi@opterra.it', action: 'update', resource: 'Tender', resourceName: 'Manutenzione impianti', createdAt: '2026-06-10T11:15:00Z', ip: '192.168.1.12' },
-  { id: 3, user: 'Giuseppe Verdi', email: 'g.verdi@opterra.it', action: 'upload', resource: 'Document', resourceName: 'Capitolato tecnico.pdf', createdAt: '2026-06-09T16:45:00Z', ip: '192.168.1.15' },
-  { id: 4, user: 'Anna Neri', email: 'anna.neri@opterra.it', action: 'delete', resource: 'Task', resourceName: 'Task obsoleto', createdAt: '2026-06-09T09:20:00Z', ip: '192.168.1.18' },
-  { id: 5, user: 'Marco Rossi', email: 'marco.rossi@opterra.it', action: 'login', resource: 'Session', resourceName: 'Login web', createdAt: '2026-06-08T08:30:00Z', ip: '192.168.1.10' },
-  { id: 6, user: 'Francesco Blu', email: 'francesco.blu@opterra.it', action: 'invite', resource: 'User', resourceName: 'Sofia Gialli', createdAt: '2026-06-08T10:00:00Z', ip: '192.168.1.20' },
-  { id: 7, user: 'Sofia Gialli', email: 'sofia.gialli@opterra.it', action: 'update', resource: 'Profile', resourceName: 'Profilo personale', createdAt: '2026-06-07T14:00:00Z', ip: '192.168.1.22' },
-  { id: 8, user: 'Marco Rossi', email: 'marco.rossi@opterra.it', action: 'export', resource: 'Report', resourceName: 'Report gare Q2', createdAt: '2026-06-07T09:00:00Z', ip: '192.168.1.10' },
-  { id: 9, user: 'Laura Bianchi', email: 'laura.bianchi@opterra.it', action: 'create', resource: 'Task', resourceName: 'Revisione offerta', createdAt: '2026-06-06T16:30:00Z', ip: '192.168.1.12' },
-  { id: 10, user: 'Giuseppe Verdi', email: 'g.verdi@opterra.it', action: 'logout', resource: 'Session', resourceName: 'Logout web', createdAt: '2026-06-06T18:00:00Z', ip: '192.168.1.15' },
-]
-
-const actionConfig = {
-  create: { label: 'Creazione', icon: 'plus', variant: 'success' },
-  update: { label: 'Modifica', icon: 'edit', variant: 'info' },
-  delete: { label: 'Eliminazione', icon: 'trash', variant: 'danger' },
-  upload: { label: 'Upload', icon: 'upload', variant: 'info' },
-  login: { label: 'Login', icon: 'checkCircle', variant: 'success' },
-  logout: { label: 'Logout', icon: 'logout', variant: 'neutral' },
-  invite: { label: 'Invito', icon: 'user', variant: 'pending' },
-  export: { label: 'Export', icon: 'download', variant: 'warning' },
+function deriveActionVerb(action = '') {
+  const verb = action.split('.').pop() || ''
+  if (verb.includes('creat')) return 'create'
+  if (verb.includes('updat') || verb.includes('changed') || verb.includes('edit')) return 'update'
+  if (verb.includes('delet') || verb.includes('remov')) return 'delete'
+  if (verb.includes('upload')) return 'upload'
+  if (verb.includes('invit')) return 'invite'
+  if (verb.includes('login')) return 'login'
+  if (verb.includes('logout')) return 'logout'
+  if (verb.includes('export')) return 'export'
+  return verb || 'update'
 }
 
 export function AuditLogPage() {
+  const { t } = useTranslation()
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [actionFilter, setActionFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
-  const filtered = mockLogs.filter(log => {
-    if (search && !log.user.toLowerCase().includes(search.toLowerCase()) && !log.resourceName.toLowerCase().includes(search.toLowerCase())) return false
+  const fetchLogs = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const params = {}
+      if (dateFrom) params.from = dateFrom
+      if (dateTo) params.to = `${dateTo} 23:59:59`
+      const data = await getAuditLogs(params)
+      setLogs((Array.isArray(data) ? data : []).map(row => ({
+        id: row.id,
+        createdAt: row.created_at,
+        user: row.user_name || '—',
+        email: row.user_email || '',
+        action: deriveActionVerb(row.action),
+        actionRaw: row.action,
+        resource: row.entity_type || '—',
+        resourceName: row.entity_id ? `#${row.entity_id}` : '—',
+        ip: row.ip_address || '—',
+      })))
+    } catch (err) {
+      setError(err)
+    } finally {
+      setLoading(false)
+    }
+  }, [dateFrom, dateTo])
+
+  useEffect(() => {
+    fetchLogs()
+  }, [fetchLogs])
+
+  async function handleExport() {
+    try {
+      const blob = await exportAuditLogs()
+      const url = window.URL.createObjectURL(new Blob([blob]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'audit-log.csv')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+    }
+  }
+
+  const actionConfig = {
+    create: { label: t('private.auditLog.actionLabels.create'), icon: 'plus', variant: 'success' },
+    update: { label: t('private.auditLog.actionLabels.update'), icon: 'edit', variant: 'info' },
+    delete: { label: t('private.auditLog.actionLabels.delete'), icon: 'trash', variant: 'danger' },
+    upload: { label: t('private.auditLog.actionLabels.upload'), icon: 'upload', variant: 'info' },
+    login: { label: t('private.auditLog.actionLabels.login'), icon: 'checkCircle', variant: 'success' },
+    logout: { label: t('private.auditLog.actionLabels.logout'), icon: 'logout', variant: 'neutral' },
+    invite: { label: t('private.auditLog.actionLabels.invite'), icon: 'user', variant: 'pending' },
+    export: { label: t('private.auditLog.actionLabels.export'), icon: 'download', variant: 'warning' },
+  }
+
+  const filtered = logs.filter(log => {
+    const q = search.toLowerCase()
+    if (search && !(log.user || '').toLowerCase().includes(q) && !(log.resourceName || '').toLowerCase().includes(q) && !(log.actionRaw || '').toLowerCase().includes(q)) return false
     if (actionFilter && log.action !== actionFilter) return false
-    if (dateFrom && new Date(log.createdAt) < new Date(dateFrom)) return false
-    if (dateTo && new Date(log.createdAt) > new Date(dateTo + 'T23:59:59')) return false
     return true
   })
 
   const columns = [
     {
-      label: 'Data',
+      label: t('private.auditLog.columns.date'),
       key: 'createdAt',
       render: row => (
         <span className={styles.dateCell}>
@@ -61,7 +112,7 @@ export function AuditLogPage() {
       width: '160px',
     },
     {
-      label: 'Utente',
+      label: t('private.auditLog.columns.user'),
       key: 'user',
       render: row => (
         <div className={styles.userCell}>
@@ -77,7 +128,7 @@ export function AuditLogPage() {
       width: '25%',
     },
     {
-      label: 'Azione',
+      label: t('private.auditLog.columns.action'),
       key: 'action',
       render: row => {
         const config = actionConfig[row.action] || { label: row.action, icon: 'circle', variant: 'neutral' }
@@ -90,7 +141,7 @@ export function AuditLogPage() {
       },
     },
     {
-      label: 'Risorsa',
+      label: t('private.auditLog.columns.resource'),
       key: 'resource',
       render: row => (
         <div className={styles.resourceCell}>
@@ -100,7 +151,7 @@ export function AuditLogPage() {
       ),
     },
     {
-      label: 'IP',
+      label: t('private.auditLog.columns.ip'),
       key: 'ip',
       render: row => (
         <span className={styles.ipCell}>
@@ -119,19 +170,39 @@ export function AuditLogPage() {
     setDateTo('')
   }
 
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <EmptyState
+          icon="alertCircle"
+          title={t('common.error')}
+          message={error.message}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Workspace', to: APP_ROUTES.DASHBOARD },
-        { label: 'Audit Log' },
+        { label: t('components.breadcrumbs.workspace'), to: APP_ROUTES.DASHBOARD },
+        { label: t('private.auditLog.title') },
       ]} />
       <PageHeader
-        title="Audit Log"
-        subtitle="Traccia tutte le azioni effettuate nel workspace"
+        title={t('private.auditLog.title')}
+        subtitle={t('private.auditLog.subtitle')}
         actions={
-          <SubmitButton variant="secondary" onClick={() => {}} className={styles.exportBtn}>
+          <SubmitButton variant="secondary" onClick={handleExport} className={styles.exportBtn}>
             <Icon name="download" size={16} />
-            <span>Esporta</span>
+            <span>{t('private.auditLog.export')}</span>
           </SubmitButton>
         }
       />
@@ -140,7 +211,7 @@ export function AuditLogPage() {
         <div className={styles.dateInputGroup}>
           <span className={styles.dateLabel}>
             <Icon name="calendar" size={14} />
-            Dal
+            {t('private.auditLog.dateFrom')}
           </span>
           <input
             type="date"
@@ -152,7 +223,7 @@ export function AuditLogPage() {
         <div className={styles.dateInputGroup}>
           <span className={styles.dateLabel}>
             <Icon name="calendar" size={14} />
-            Al
+            {t('private.auditLog.dateTo')}
           </span>
           <input
             type="date"
@@ -172,10 +243,10 @@ export function AuditLogPage() {
         searchValue={search}
         onSearchChange={setSearch}
         onClear={handleClearFilters}
-        searchPlaceholder="Cerca per utente o risorsa..."
+        searchPlaceholder={t('private.auditLog.searchPlaceholder')}
         filters={[
           {
-            placeholder: 'Tutte le azioni',
+            placeholder: t('private.auditLog.allActions'),
             value: actionFilter,
             onChange: setActionFilter,
             options: Object.entries(actionConfig).map(([value, config]) => ({ value, label: config.label })),
@@ -189,8 +260,8 @@ export function AuditLogPage() {
         emptyState={
           <EmptyState
             icon="audit"
-            title="Nessun log trovato"
-            message="Prova a modificare i filtri o il range di date."
+            title={t('private.auditLog.emptyTitle')}
+            message={t('private.auditLog.emptyMessage')}
           />
         }
       />

@@ -122,6 +122,36 @@
   color: var(--color-teal-400);
 }
 
+.langBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text-secondary);
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.langBtn:hover {
+  border-color: var(--color-teal-500);
+  color: var(--color-teal-600);
+  background: var(--color-teal-50);
+}
+
+.dark .langBtn:hover {
+  background: rgba(45, 212, 168, 0.08);
+  color: var(--color-teal-400);
+}
+
 .avatarBtn {
   width: 32px;
   height: 32px;

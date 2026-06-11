@@ -1,71 +1,87 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../hooks/useAuth';
 import Icon from '../../components/Icon.jsx';
-import { useAuth } from '../../hooks/useAuth.js';
-import { APP_ROUTES } from '../../utils/constants.js';
 import styles from './RegisterPage.module.css';
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
   const { register } = useAuth();
-
-  const [companyName, setCompanyName] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    companyName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [agreed, setAgreed] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+    if (form.password !== form.confirmPassword) {
+      setError('Le password non corrispondono.');
       return;
     }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (!agreed) {
-      setError('Please agree to the Terms of Service');
-      return;
-    }
-
     setLoading(true);
-
     try {
-      const slug = companyName
+      const slug = form.companyName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
+        .replace(/^-|-$/g, '')
+        + '-' + Date.now().toString(36);
 
       await register({
-        name: companyName,
+        name: form.companyName,
         slug,
-        firstName,
-        lastName,
-        email,
-        password,
+        email: form.email,
+        password: form.password,
+        firstName: form.firstName,
+        lastName: form.lastName,
         country: 'IT',
       });
-
-      navigate(APP_ROUTES.DASHBOARD, { replace: true });
+      navigate('/app/dashboard');
     } catch (err) {
-      const msg = err.response?.data?.error?.message || 'Registration failed';
-      setError(msg);
+      setError(err?.response?.data?.error?.message || t('common.error'));
     } finally {
       setLoading(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.gridPattern} />
+        <div className={styles.container}>
+          <div className={styles.successCard}>
+            <div className={styles.successIcon}>
+              <Icon name="checkCircle" size={64} />
+            </div>
+            <h2 className={styles.successTitle}>{t('public.register.successTitle')}</h2>
+            <p className={styles.successText}>
+              {t('public.register.successMessage')}
+            </p>
+            <Link to="/login" className={styles.successBtn}>
+              <Icon name="arrowRight" size={18} />
+              {t('public.register.goToLogin')}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
@@ -76,31 +92,28 @@ export default function RegisterPage() {
             <div className={styles.logoWrapper}>
               <Icon name="sparkles" size={40} className={styles.logo} />
             </div>
-            <h1 className={styles.title}>Create your account</h1>
-            <p className={styles.subtitle}>Start your free trial today</p>
+            <h1 className={styles.title}>{t('public.register.heading')}</h1>
+            <p className={styles.subtitle}>{t('public.register.subtitle')}</p>
           </div>
 
           {error && (
-            <div className={styles.errorBanner}>
-              <Icon name="alertCircle" size={16} />
-              <span>{error}</span>
-            </div>
+            <div className={styles.errorMessage}>{error}</div>
           )}
 
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.field}>
               <label className={styles.label}>
                 <Icon name="building" size={16} className={styles.labelIcon} />
-                Company Name
+                {t('public.register.companyName')}
               </label>
               <input
+                name="companyName"
                 type="text"
                 required
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
                 className={styles.input}
-                placeholder="Your company"
-                disabled={loading}
+                placeholder={t('public.register.companyPlaceholder')}
+                value={form.companyName}
+                onChange={handleChange}
               />
             </div>
 
@@ -108,31 +121,31 @@ export default function RegisterPage() {
               <div className={styles.field}>
                 <label className={styles.label}>
                   <Icon name="user" size={16} className={styles.labelIcon} />
-                  First Name
+                  {t('public.register.firstName')}
                 </label>
                 <input
+                  name="firstName"
                   type="text"
                   required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
                   className={styles.input}
-                  placeholder="John"
-                  disabled={loading}
+                  placeholder={t('public.register.firstNamePlaceholder')}
+                  value={form.firstName}
+                  onChange={handleChange}
                 />
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>
                   <Icon name="user" size={16} className={styles.labelIcon} />
-                  Last Name
+                  {t('public.register.lastName')}
                 </label>
                 <input
+                  name="lastName"
                   type="text"
                   required
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
                   className={styles.input}
-                  placeholder="Doe"
-                  disabled={loading}
+                  placeholder={t('public.register.lastNamePlaceholder')}
+                  value={form.lastName}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -140,16 +153,17 @@ export default function RegisterPage() {
             <div className={styles.field}>
               <label className={styles.label}>
                 <Icon name="mail" size={16} className={styles.labelIcon} />
-                Email
+                {t('public.register.email')}
               </label>
               <input
+                name="email"
                 type="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 className={styles.input}
-                placeholder="john@company.com"
-                disabled={loading}
+                placeholder={t('public.register.emailPlaceholder')}
+                value={form.email}
+                onChange={handleChange}
+                autoComplete="email"
               />
             </div>
 
@@ -157,17 +171,18 @@ export default function RegisterPage() {
               <div className={styles.field}>
                 <label className={styles.label}>
                   <Icon name="lock" size={16} className={styles.labelIcon} />
-                  Password
+                  {t('public.register.password')}
                 </label>
                 <div className={styles.passwordWrapper}>
                   <input
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     className={styles.input}
-                    placeholder="Min 8 characters"
-                    disabled={loading}
+                    placeholder={t('public.register.passwordPlaceholder')}
+                    value={form.password}
+                    onChange={handleChange}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -182,17 +197,18 @@ export default function RegisterPage() {
               <div className={styles.field}>
                 <label className={styles.label}>
                   <Icon name="lock" size={16} className={styles.labelIcon} />
-                  Confirm
+                  {t('public.register.confirmPassword')}
                 </label>
                 <div className={styles.passwordWrapper}>
                   <input
+                    name="confirmPassword"
                     type={showConfirm ? 'text' : 'password'}
                     required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className={styles.input}
-                    placeholder="Repeat password"
-                    disabled={loading}
+                    placeholder={t('public.register.confirmPasswordPlaceholder')}
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -212,31 +228,30 @@ export default function RegisterPage() {
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
                 className={styles.checkboxInput}
-                disabled={loading}
+                required
               />
               <span className={styles.checkboxCheck}>
                 <Icon name="check" size={12} />
               </span>
               <span className={styles.checkboxLabel}>
-                I agree to the <Link to="/terms" className={styles.termsLink}>Terms of Service</Link> and <Link to="/privacy" className={styles.termsLink}>Privacy Policy</Link>
+                {t('public.register.agreeToTerms', {
+                  termsLink: <Link to="/terms" className={styles.termsLink}>{t('public.register.termsOfService')}</Link>,
+                  privacyLink: <Link to="/privacy" className={styles.termsLink}>{t('public.register.privacyPolicy')}</Link>,
+                })}
               </span>
             </label>
 
-            <button type="submit" className={styles.submitBtn} disabled={loading}>
-              {loading ? (
-                <Icon name="loader" size={18} className={styles.spinner} />
-              ) : (
-                <Icon name="arrowRight" size={18} />
-              )}
-              {loading ? 'Creating account...' : 'Create Account'}
+            <button type="submit" className={styles.submitBtn} disabled={loading || !agreed}>
+              <Icon name="arrowRight" size={18} />
+              {loading ? t('common.loading') : t('public.register.submit')}
             </button>
           </form>
 
           <div className={styles.footer}>
             <p className={styles.footerText}>
-              Already have an account?{' '}
+              {t('public.register.hasAccount')}{' '}
               <Link to="/login" className={styles.footerLink}>
-                Sign in
+                {t('public.register.signIn')}
               </Link>
             </p>
           </div>

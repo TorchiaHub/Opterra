@@ -1,13 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Loader } from './feedback/Loader'
-import { APP_ROUTES } from '../utils/constants'
+import { APP_ROUTES, ROLES } from '../utils/constants'
 
 export function ProtectedRoute({ requiredRole }) {
   const { user, loading, isAuthenticated } = useAuth()
 
   if (loading) {
-    return <Loader label="Verifica sessione..." />
+    return <Loader label="Checking session..." />
   }
 
   if (!isAuthenticated) {
@@ -15,7 +15,9 @@ export function ProtectedRoute({ requiredRole }) {
   }
 
   if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to={APP_ROUTES.DASHBOARD} replace />
+    if (requiredRole === ROLES.SUPERADMIN && user?.role !== ROLES.SUPERADMIN) {
+      return <Navigate to={APP_ROUTES.DASHBOARD} replace />
+    }
   }
 
   return <Outlet />

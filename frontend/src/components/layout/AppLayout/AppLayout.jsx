@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { UIContext } from '../../../context/UIContext'
 import { Sidebar } from '../Sidebar/Sidebar'
 import { Topbar } from '../Topbar/Topbar'
+import { ChatbotPanel } from '../../chatbot/ChatbotPanel'
 import styles from './AppLayout.module.css'
 
 export function AppLayout() {
@@ -19,6 +20,7 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <ChatbotPanel />
     </div>
   )
 }

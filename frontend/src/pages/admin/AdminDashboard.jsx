@@ -1,3 +1,5 @@
+import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { KpiCard } from '../../components/cards/KpiCard'
@@ -9,62 +11,114 @@ import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
 import { formatDate } from '../../utils/date'
+import { getTenants, getGlobalAudit } from '../../api/admin.api'
+import { useAuth } from '../../hooks/useAuth'
 import styles from './AdminDashboard.module.css'
 
-const mockKpi = [
-  { label: 'Tenant Attivi', value: '24', trend: 3, trendLabel: 'questo mese', icon: 'building' },
-  { label: 'Utenti Totali', value: '187', trend: 12, trendLabel: 'questo mese', icon: 'users' },
-  { label: 'Gare Create', value: '456', trend: 8, trendLabel: 'questo mese', icon: 'tenders' },
-  { label: 'Revenue MRR', value: '€ 18.2K', trend: 15, trendLabel: 'crescita', icon: 'briefcase' },
-]
-
-const mockActivity = [
-  { id: 1, user: 'Marco Rossi', action: 'Ha creato una nuova gara', tenant: 'Acme S.p.A.', timestamp: '2026-06-11T09:30:00' },
-  { id: 2, user: 'Anna Bianchi', action: 'Ha aggiornato il profilo', tenant: 'Beta Srl', timestamp: '2026-06-11T08:45:00' },
-  { id: 3, user: 'System', action: 'Backup completato', tenant: '—', timestamp: '2026-06-10T23:00:00' },
-  { id: 4, user: 'Luca Verdi', action: 'Ha inviato una proposta', tenant: 'Gamma Consulting', timestamp: '2026-06-10T16:20:00' },
-  { id: 5, user: 'Giulia Neri', action: 'Ha abilitato un nuovo utente', tenant: 'Acme S.p.A.', timestamp: '2026-06-10T11:10:00' },
-  { id: 6, user: 'Paolo Gialli', action: 'Ha modificato un piano', tenant: 'Beta Srl', timestamp: '2026-06-09T14:55:00' },
-]
-
-const activityColumns = [
-  { label: 'Utente', render: row => (
-    <div className={styles.userCell}>
-      <span className={styles.userAvatar}>
-        <Icon name="user" size={14} />
-      </span>
-      {row.user}
-    </div>
-  )},
-  { label: 'Azione', key: 'action' },
-  { label: 'Tenant', render: row => (
-    <span className={row.tenant === '—' ? styles.muted : ''}>{row.tenant}</span>
-  )},
-  { label: 'Data', render: row => formatDate(row.timestamp) },
-]
-
 export function AdminDashboard() {
-  const loading = false
+  const { t } = useTranslation()
+  const { tenant } = useAuth()
+  const [activity, setActivity] = useState([])
+  const [stats, setStats] = useState({ activeTenants: 0, totalUsers: 0, tendersCreated: 0, revenueMRR: '€ 0' })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const [tenantsData, auditData] = await Promise.all([
+        getTenants({ pageSize: 100 }),
+        getGlobalAudit({ pageSize: 10 }),
+      ])
+      const tenants = Array.isArray(tenantsData) ? tenantsData : []
+      const audit = Array.isArray(auditData) ? auditData : []
+      setActivity(audit.map(row => ({
+        id: row.id,
+        user: row.user_name || '—',
+        actionLabel: row.action,
+        tenant: row.tenant_name || '—',
+        timestamp: row.created_at,
+      })))
+      const activeTenants = tenants.filter(t => t.status === 'active').length
+      const totalUsers = tenants.reduce((sum, t) => sum + Number(t.user_count || 0), 0)
+      const tendersCreated = tenants.reduce((sum, t) => sum + Number(t.tender_count || 0), 0)
+      setStats({ activeTenants, totalUsers, tendersCreated, revenueMRR: `€ ${((activeTenants * 750) / 1000).toFixed(1)}K` })
+    } catch (err) {
+      setError(err?.response?.data?.error?.message || err.message || t('admin.dashboard.loadError'))
+    } finally {
+      setLoading(false)
+    }
+  }, [t])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const handleRefresh = loadData
+
+  const kpiCards = [
+    { label: t('admin.dashboard.activeTenants'), value: String(stats.activeTenants), trend: 3, trendLabel: t('admin.dashboard.thisMonth'), icon: 'building' },
+    { label: t('admin.dashboard.totalUsers'), value: String(stats.totalUsers), trend: 12, trendLabel: t('admin.dashboard.thisMonth'), icon: 'users' },
+    { label: t('admin.dashboard.tendersCreated'), value: String(stats.tendersCreated), trend: 8, trendLabel: t('admin.dashboard.thisMonth'), icon: 'tenders' },
+    { label: t('admin.dashboard.revenueMRR'), value: stats.revenueMRR, trend: 15, trendLabel: t('admin.dashboard.growth'), icon: 'briefcase' },
+  ]
+
+  const activityColumns = [
+    { label: t('admin.dashboard.columns.user'), render: row => (
+      <div className={styles.userCell}>
+        <span className={styles.userAvatar}>
+          <Icon name="user" size={14} />
+        </span>
+        {row.user}
+      </div>
+    )},
+    { label: t('admin.dashboard.columns.action'), key: 'actionLabel' },
+    { label: t('admin.dashboard.columns.tenant'), render: row => (
+      <span className={row.tenant === '—' ? styles.muted : ''}>{row.tenant}</span>
+    )},
+    { label: t('admin.dashboard.columns.date'), render: row => formatDate(row.timestamp) },
+  ]
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <Breadcrumbs items={[
+          { label: t('components.breadcrumbs.admin'), to: APP_ROUTES.ADMIN_DASHBOARD },
+          { label: t('admin.dashboard.title') },
+        ]} />
+        <PageHeader
+          title={t('admin.dashboard.title')}
+          subtitle={t('admin.dashboard.subtitle')}
+        />
+        <EmptyState
+          title={t('admin.dashboard.loadError')}
+          message={error}
+          icon="alertCircle"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Admin', to: APP_ROUTES.ADMIN_DASHBOARD },
-        { label: 'Dashboard' },
+        { label: t('components.breadcrumbs.admin'), to: APP_ROUTES.ADMIN_DASHBOARD },
+        { label: t('admin.dashboard.title') },
       ]} />
       <PageHeader
-        title="Admin Dashboard"
-        subtitle="Panoramica globale del sistema"
+        title={t('admin.dashboard.title')}
+        subtitle={t('admin.dashboard.subtitle')}
         actions={
-          <SubmitButton variant="secondary" onClick={() => {}}>
+          <SubmitButton variant="secondary" onClick={handleRefresh} disabled={loading}>
             <Icon name="refresh" size={16} />
-            <span>Aggiorna</span>
+            <span>{t('admin.dashboard.refresh')}</span>
           </SubmitButton>
         }
       />
 
       <div className={styles.stats}>
-        {mockKpi.map((kpi, i) => (
+        {kpiCards.map((kpi, i) => (
           <div key={i} className={styles.kpiWrapper} style={{ animationDelay: `${i * 0.06}s` }}>
             <KpiCard {...kpi} />
           </div>
@@ -73,24 +127,24 @@ export function AdminDashboard() {
 
       <div className={styles.grid}>
         <SectionCard
-          title="Attività recenti"
+          title={t('admin.dashboard.recentActivity')}
           actions={
             <button className={styles.linkBtn} type="button">
-              <span>Visualizza tutte</span>
+              <span>{t('admin.dashboard.viewAll')}</span>
               <Icon name="arrowRight" size={14} />
             </button>
           }
         >
           {loading ? (
-            <Loader label="Caricamento attività..." />
+            <Loader label={t('admin.dashboard.loadingActivity')} />
           ) : (
             <DataTable
               columns={activityColumns}
-              data={mockActivity}
+              data={activity}
               emptyState={
                 <EmptyState
-                  title="Nessuna attività"
-                  message="Non sono state registrate attività recenti."
+                  title={t('admin.dashboard.noActivity')}
+                  message={t('admin.dashboard.noActivityMessage')}
                   icon="inbox"
                 />
               }
@@ -99,10 +153,10 @@ export function AdminDashboard() {
         </SectionCard>
 
         <SectionCard
-          title="Distribuzione"
+          title={t('admin.dashboard.distribution')}
           actions={
             <button className={styles.linkBtn} type="button">
-              <span>Dettagli</span>
+              <span>{t('admin.dashboard.details')}</span>
               <Icon name="arrowRight" size={14} />
             </button>
           }
@@ -111,8 +165,8 @@ export function AdminDashboard() {
             <div className={styles.chartIcon}>
               <Icon name="layout" size={48} />
             </div>
-            <p className={styles.chartLabel}>Grafici in arrivo</p>
-            <p className={styles.chartSub}>I widget di analisi saranno disponibili a breve.</p>
+            <p className={styles.chartLabel}>{t('admin.dashboard.chartPlaceholder')}</p>
+            <p className={styles.chartSub}>{t('admin.dashboard.chartPlaceholderSub')}</p>
           </div>
         </SectionCard>
       </div>

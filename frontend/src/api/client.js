@@ -34,6 +34,7 @@ client.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
+        originalRequest._retry = true
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         }).then((token) => {
@@ -53,6 +54,9 @@ client.interceptors.response.use(
         )
         const newToken = data.data.accessToken
         localStorage.setItem('tenderflow_access_token', newToken)
+        if (data.data.refreshToken) {
+          localStorage.setItem('tenderflow_refresh_token', data.data.refreshToken)
+        }
         processQueue(null, newToken)
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return client(originalRequest)
@@ -60,7 +64,7 @@ client.interceptors.response.use(
         processQueue(refreshError, null)
         localStorage.removeItem('tenderflow_access_token')
         localStorage.removeItem('tenderflow_refresh_token')
-        localStorage.removeItem('tenderflow_user')
+        localStorage.removeItem('opterra_user')
         window.location.href = '/login'
         return Promise.reject(refreshError)
       } finally {

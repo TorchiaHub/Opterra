@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Icon from '../../components/Icon.jsx';
 import styles from './DemoRequestPage.module.css';
 
 export default function DemoRequestPage() {
+  const { t } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     company: '',
@@ -33,8 +35,8 @@ export default function DemoRequestPage() {
               <div className={styles.headerIcon}>
                 <Icon name="calendar" size={32} />
               </div>
-              <h1 className={styles.title}>Request a Demo</h1>
-              <p className={styles.subtitle}>See how Opterra can transform your tender process</p>
+              <h1 className={styles.title}>{t('public.demo.heading')}</h1>
+              <p className={styles.subtitle}>{t('public.demo.subtitle')}</p>
             </div>
 
             <form onSubmit={handleSubmit} className={styles.form}>
@@ -42,7 +44,7 @@ export default function DemoRequestPage() {
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <Icon name="building" size={16} className={styles.labelIcon} />
-                    Company Name
+                    {t('public.demo.companyName')}
                   </label>
                   <input
                     name="company"
@@ -51,7 +53,7 @@ export default function DemoRequestPage() {
                     value={form.company}
                     onChange={handleChange}
                     className={styles.input}
-                    placeholder="Your company"
+                    placeholder={t('public.demo.companyPlaceholder')}
                   />
                 </div>
               </div>
@@ -60,7 +62,7 @@ export default function DemoRequestPage() {
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <Icon name="user" size={16} className={styles.labelIcon} />
-                    First Name
+                    {t('public.demo.firstName')}
                   </label>
                   <input
                     name="firstName"
@@ -69,13 +71,13 @@ export default function DemoRequestPage() {
                     value={form.firstName}
                     onChange={handleChange}
                     className={styles.input}
-                    placeholder="John"
+                    placeholder={t('public.demo.firstNamePlaceholder')}
                   />
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <Icon name="user" size={16} className={styles.labelIcon} />
-                    Last Name
+                    {t('public.demo.lastName')}
                   </label>
                   <input
                     name="lastName"
@@ -84,7 +86,7 @@ export default function DemoRequestPage() {
                     value={form.lastName}
                     onChange={handleChange}
                     className={styles.input}
-                    placeholder="Doe"
+                    placeholder={t('public.demo.lastNamePlaceholder')}
                   />
                 </div>
               </div>
@@ -93,7 +95,7 @@ export default function DemoRequestPage() {
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <Icon name="mail" size={16} className={styles.labelIcon} />
-                    Email
+                    {t('public.demo.email')}
                   </label>
                   <input
                     name="email"
@@ -102,13 +104,13 @@ export default function DemoRequestPage() {
                     value={form.email}
                     onChange={handleChange}
                     className={styles.input}
-                    placeholder="john@company.com"
+                    placeholder={t('public.demo.emailPlaceholder')}
                   />
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <Icon name="phone" size={16} className={styles.labelIcon} />
-                    Phone
+                    {t('public.demo.phone')}
                   </label>
                   <input
                     name="phone"
@@ -116,7 +118,7 @@ export default function DemoRequestPage() {
                     value={form.phone}
                     onChange={handleChange}
                     className={styles.input}
-                    placeholder="+1 234 567 890"
+                    placeholder={t('public.demo.phonePlaceholder')}
                   />
                 </div>
               </div>
@@ -124,7 +126,7 @@ export default function DemoRequestPage() {
               <div className={styles.field}>
                 <label className={styles.label}>
                   <Icon name="chat" size={16} className={styles.labelIcon} />
-                  Message
+                  {t('public.demo.message')}
                 </label>
                 <textarea
                   name="message"
@@ -132,13 +134,13 @@ export default function DemoRequestPage() {
                   value={form.message}
                   onChange={handleChange}
                   className={styles.textarea}
-                  placeholder="Tell us about your needs..."
+                  placeholder={t('public.demo.messagePlaceholder')}
                 />
               </div>
 
               <button type="submit" className={styles.submitBtn}>
                 <Icon name="send" size={18} />
-                Submit Request
+                {t('public.demo.submit')}
               </button>
             </form>
           </div>
@@ -147,13 +149,13 @@ export default function DemoRequestPage() {
             <div className={styles.successIcon}>
               <Icon name="checkCircle" size={64} />
             </div>
-            <h2 className={styles.successTitle}>Request Submitted!</h2>
+            <h2 className={styles.successTitle}>{t('public.demo.successTitle')}</h2>
             <p className={styles.successText}>
-              Thank you for your interest. Our team will contact you shortly to schedule your demo.
+              {t('public.demo.successMessage')}
             </p>
             <Link to="/" className={styles.successBtn}>
               <Icon name="arrowLeft" size={18} />
-              Back to Home
+              {t('public.demo.backHome')}
             </Link>
           </div>
         )}

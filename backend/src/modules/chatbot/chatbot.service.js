@@ -86,7 +86,7 @@ function processUserIntent(text) {
 
   if (lower.includes('crea') && (lower.includes('gara') || lower.includes('tender'))) return { action: 'create_tender' }
   if (lower.includes('stato') && lower.includes('gara')) return { action: 'update_tender_status' }
-  if (lower.includes('scadenza') || lower.includes('deadline')) return { action: 'list_deadlines' }
+  if (lower.includes('scadenz') || lower.includes('deadline')) return { action: 'list_deadlines' }
   if (lower.includes('task') && (lower.includes('crea') || lower.includes('aggiungi'))) return { action: 'create_task' }
   if (lower.includes('assegna') || lower.includes('assign')) return { action: 'assign_task' }
   if (lower.includes('requisito') || lower.includes('checklist')) return { action: 'add_requirement' }
@@ -125,11 +125,42 @@ async function generateAiResponse(text, session, tenantId) {
     ? ` (contesto: gara #${session.context_id})`
     : ''
 
-  const result = await aiService.mockAiResponse({ requestType: 'qa' })
+  const apiKey = process.env.OPENROUTER_API_KEY
+  if (!apiKey || apiKey === 'sk-placeholder') {
+    return {
+      text: `AI chat non configurata. Imposta OPENROUTER_API_KEY nel file .env${context}`,
+      toolCall: null,
+    }
+  }
 
-  return {
-    text: `${result}${context}`,
-    toolCall: null,
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://tenderflow.app',
+        'X-Title': 'TenderFlow',
+      },
+      body: JSON.stringify({
+        model: 'openrouter/free',
+        messages: [
+          { role: 'system', content: 'Sei un assistente specializzato in gare d\'appalto pubbliche italiane. Rispondi in modo conciso e professionale in italiano.' },
+          { role: 'user', content: text },
+        ],
+        max_tokens: 1000,
+      }),
+    })
+
+    const json = await response.json()
+    const content = json.choices?.[0]?.message?.content || 'Nessuna risposta disponibile.'
+    return { text: `${content}${context}`, toolCall: null }
+  } catch (err) {
+    logger.error('OpenRouter API call failed', { error: err.message })
+    return {
+      text: `AI chat non configurata. Imposta OPENROUTER_API_KEY nel file .env${context}`,
+      toolCall: null,
+    }
   }
 }
 

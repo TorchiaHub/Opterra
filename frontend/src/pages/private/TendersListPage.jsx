@@ -1,49 +1,65 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
 import { FilterBar } from '../../components/tables/FilterBar'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { Loader } from '../../components/feedback/Loader'
 import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import {
-  APP_ROUTES, TENDER_STATUS, TENDER_STATUS_LABELS,
-  TENDER_STATUS_COLORS, TENDER_TYPE_LABELS,
+  APP_ROUTES, TENDER_STATUS,
+  TENDER_STATUS_COLORS,
 } from '../../utils/constants'
 import { formatCurrency } from '../../utils/format'
 import { formatDate } from '../../utils/date'
+import { getTenders, createTender } from '../../api/tenders.api'
+import { useAuth } from '../../hooks/useAuth'
 import styles from './TendersListPage.module.css'
-
-const mockTenders = [
-  { id: 1, title: 'Fornitura software procurement', issuer: 'Comune di Milano', type: 'rfp', status: 'active', deadlineAt: '2026-07-12T10:00:00Z', valueAmount: 120000 },
-  { id: 2, title: 'Servizi di consulenza ICT', issuer: 'Regione Lazio', type: 'rfq', status: 'in_review', deadlineAt: '2026-06-28T10:00:00Z', valueAmount: 85000 },
-  { id: 3, title: 'Manutenzione impianti sportivi', issuer: 'ASL Roma', type: 'tender', status: 'draft', deadlineAt: '2026-08-01T10:00:00Z', valueAmount: 200000 },
-  { id: 4, title: 'Fornitura arredi ufficio', issuer: 'Comune di Torino', type: 'bando', status: 'won', deadlineAt: '2026-05-15T10:00:00Z', valueAmount: 45000 },
-  { id: 5, title: 'Servizi di pulizia e sanificazione', issuer: 'Provincia di Milano', type: 'tender', status: 'lost', deadlineAt: '2026-04-30T10:00:00Z', valueAmount: 60000 },
-  { id: 6, title: 'Fornitura hardware rete', issuer: 'Comune di Bologna', type: 'rfq', status: 'active', deadlineAt: '2026-07-20T10:00:00Z', valueAmount: 95000 },
-  { id: 7, title: 'Consulenza cybersecurity', issuer: 'INPS', type: 'rfp', status: 'submitted', deadlineAt: '2026-06-15T10:00:00Z', valueAmount: 320000 },
-  { id: 8, title: 'Manutenzione ascensori', issuer: 'Regione Piemonte', type: 'bando', status: 'cancelled', deadlineAt: '2026-06-10T10:00:00Z', valueAmount: 15000 },
-]
 
 export function TendersListPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const { user } = useAuth()
+  const [tenders, setTenders] = useState([])
+  const [meta, setMeta] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [sortKey, setSortKey] = useState(null)
   const [sortDir, setSortDir] = useState('asc')
-
-  let filtered = mockTenders.filter(t => {
-    if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !t.issuer.toLowerCase().includes(search.toLowerCase())) return false
-    if (statusFilter && t.status !== statusFilter) return false
-    if (typeFilter && t.type !== typeFilter) return false
-    return true
+  const [page, setPage] = useState(1)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [newTender, setNewTender] = useState({
+    title: '', issuer: '', type: '', deadlineAt: '', valueAmount: '', description: '',
   })
+  const [creating, setCreating] = useState(false)
 
+  useEffect(() => {
+    const fetchTenders = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const result = await getTenders({ page, pageSize: 20, search, status: statusFilter, type: typeFilter })
+        setTenders(result.items ?? result)
+        setMeta(result.meta ?? null)
+      } catch (err) {
+        setError(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTenders()
+  }, [search, statusFilter, typeFilter, page])
+
+  let sorted = [...tenders]
   if (sortKey) {
-    filtered = [...filtered].sort((a, b) => {
+    sorted = [...tenders].sort((a, b) => {
       const aVal = a[sortKey]
       const bVal = b[sortKey]
       if (aVal < bVal) return sortDir === 'asc' ? -1 : 1
@@ -63,7 +79,7 @@ export function TendersListPage() {
 
   const columns = [
     {
-      label: 'Gara',
+      label: t('private.tenders.columns.tender'),
       key: 'title',
       sortable: true,
       onSort: () => handleSort('title'),
@@ -71,55 +87,79 @@ export function TendersListPage() {
       width: '30%',
     },
     {
-      label: 'Ente',
+      label: t('private.tenders.columns.issuer'),
       key: 'issuer',
       sortable: true,
       onSort: () => handleSort('issuer'),
       render: row => <span className={styles.rowMeta}>{row.issuer}</span>,
     },
     {
-      label: 'Tipo',
+      label: t('private.tenders.columns.type'),
       key: 'type',
       sortable: true,
       onSort: () => handleSort('type'),
       render: row => (
         <span className={styles.typeTag}>
           <Icon name="tag" size={12} />
-          {TENDER_TYPE_LABELS[row.type] || row.type}
+          {t(`tenderTypes.${row.type}`) || row.type}
         </span>
       ),
     },
     {
-      label: 'Stato',
+      label: t('private.tenders.columns.status'),
       key: 'status',
       render: row => (
         <StatusBadge
-          label={TENDER_STATUS_LABELS[row.status]}
+          label={t(`status.${row.status}`)}
           variant={TENDER_STATUS_COLORS[row.status]}
         />
       ),
     },
     {
-      label: 'Scadenza',
-      key: 'deadlineAt',
+      label: t('private.tenders.columns.deadline'),
+      key: 'deadline_at',
       sortable: true,
-      onSort: () => handleSort('deadlineAt'),
+      onSort: () => handleSort('deadline_at'),
       render: row => (
         <span className={styles.rowDate}>
           <Icon name="calendar" size={12} />
-          {formatDate(row.deadlineAt)}
+          {formatDate(row.deadline_at)}
         </span>
       ),
     },
     {
-      label: 'Valore',
-      key: 'valueAmount',
+      label: t('private.tenders.columns.value'),
+      key: 'value_amount',
       sortable: true,
-      onSort: () => handleSort('valueAmount'),
-      render: row => <span className={styles.rowValue}>{formatCurrency(row.valueAmount)}</span>,
+      onSort: () => handleSort('value_amount'),
+      render: row => <span className={styles.rowValue}>{formatCurrency(row.value_amount)}</span>,
       width: '120px',
     },
   ]
+
+  async function handleCreateTender() {
+    if (!newTender.title.trim() || !newTender.issuer.trim()) return
+    setCreating(true)
+    try {
+      await createTender({
+        title: newTender.title.trim(),
+        issuer: newTender.issuer.trim(),
+        type: newTender.type || undefined,
+        deadlineAt: newTender.deadlineAt || undefined,
+        valueAmount: newTender.valueAmount ? Number(newTender.valueAmount) : undefined,
+        description: newTender.description.trim() || undefined,
+      })
+      setShowCreateModal(false)
+      setNewTender({ title: '', issuer: '', type: '', deadlineAt: '', valueAmount: '', description: '' })
+      const result = await getTenders({ page, pageSize: 20, search, status: statusFilter, type: typeFilter })
+      setTenders(result.items ?? result)
+      setMeta(result.meta ?? null)
+    } catch {
+      // silently fail
+    } finally {
+      setCreating(false)
+    }
+  }
 
   function handleClearFilters() {
     setSearch('')
@@ -127,21 +167,42 @@ export function TendersListPage() {
     setTypeFilter('')
     setSortKey(null)
     setSortDir('asc')
+    setPage(1)
+  }
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <EmptyState
+          icon="alertCircle"
+          title={t('private.tenders.errorTitle')}
+          message={t('private.tenders.errorMessage')}
+        />
+      </div>
+    )
   }
 
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Workspace', to: APP_ROUTES.DASHBOARD },
-        { label: 'Gare' },
+        { label: t('components.breadcrumbs.workspace'), to: APP_ROUTES.DASHBOARD },
+        { label: t('private.tenders.title') },
       ]} />
       <PageHeader
-        title="Gare"
-        subtitle="Gestisci le gare del tuo team"
+        title={t('private.tenders.title')}
+        subtitle={t('private.tenders.subtitle')}
         actions={
-          <SubmitButton variant="primary" onClick={() => {}} className={styles.newBtn}>
+          <SubmitButton variant="primary" onClick={() => setShowCreateModal(true)} className={styles.newBtn}>
             <Icon name="plus" size={16} />
-            <span>Nuova Gara</span>
+            <span>{t('private.tenders.newTender')}</span>
           </SubmitButton>
         }
       />
@@ -150,35 +211,119 @@ export function TendersListPage() {
         searchValue={search}
         onSearchChange={setSearch}
         onClear={handleClearFilters}
-        searchPlaceholder="Cerca per titolo o ente..."
+        searchPlaceholder={t('private.tenders.searchPlaceholder')}
         filters={[
           {
-            placeholder: 'Tutti gli stati',
+            placeholder: t('private.tenders.allStatuses'),
             value: statusFilter,
             onChange: setStatusFilter,
-            options: Object.entries(TENDER_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+            options: Object.entries(TENDER_STATUS).map(([, value]) => ({ value, label: t(`status.${value}`) })),
           },
           {
-            placeholder: 'Tutti i tipi',
+            placeholder: t('private.tenders.allTypes'),
             value: typeFilter,
             onChange: setTypeFilter,
-            options: Object.entries(TENDER_TYPE_LABELS).map(([value, label]) => ({ value, label })),
+            options: Object.entries({ rfp: 'rfp', rfq: 'rfq', tender: 'tender', bando: 'bando' }).map(([, value]) => ({ value, label: t(`tenderTypes.${value}`) })),
           },
         ]}
       />
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={sorted}
         onRowClick={row => navigate(`/app/tenders/${row.id}`)}
         emptyState={
           <EmptyState
             icon="inbox"
-            title="Nessuna gara trovata"
-            message="Prova a modificare i filtri o crea una nuova gara."
+            title={t('private.tenders.emptyTitle')}
+            message={t('private.tenders.emptyMessage')}
           />
         }
       />
+
+      {showCreateModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>{t('private.tenders.newTender')}</h2>
+              <button className={styles.modalClose} onClick={() => setShowCreateModal(false)}>
+                <Icon name="x" size={20} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <label className={styles.modalLabel}>
+                <span>{t('private.tenders.form.title')}</span>
+                <input
+                  className={styles.modalInput}
+                  value={newTender.title}
+                  onChange={e => setNewTender(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder={t('private.tenders.form.titlePlaceholder')}
+                />
+              </label>
+              <label className={styles.modalLabel}>
+                <span>{t('private.tenders.form.issuer')}</span>
+                <input
+                  className={styles.modalInput}
+                  value={newTender.issuer}
+                  onChange={e => setNewTender(prev => ({ ...prev, issuer: e.target.value }))}
+                  placeholder={t('private.tenders.form.issuerPlaceholder')}
+                />
+              </label>
+              <label className={styles.modalLabel}>
+                <span>{t('private.tenders.form.type')}</span>
+                <select
+                  className={styles.modalInput}
+                  value={newTender.type}
+                  onChange={e => setNewTender(prev => ({ ...prev, type: e.target.value }))}
+                >
+                  <option value="">{t('private.tenders.form.selectType')}</option>
+                  <option value="rfp">{t('tenderTypes.rfp')}</option>
+                  <option value="rfq">{t('tenderTypes.rfq')}</option>
+                  <option value="tender">{t('tenderTypes.tender')}</option>
+                  <option value="bando">{t('tenderTypes.bando')}</option>
+                </select>
+              </label>
+              <label className={styles.modalLabel}>
+                <span>{t('private.tenders.form.deadline')}</span>
+                <input
+                  className={styles.modalInput}
+                  type="date"
+                  value={newTender.deadlineAt}
+                  onChange={e => setNewTender(prev => ({ ...prev, deadlineAt: e.target.value }))}
+                />
+              </label>
+              <label className={styles.modalLabel}>
+                <span>{t('private.tenders.form.value')}</span>
+                <input
+                  className={styles.modalInput}
+                  type="number"
+                  value={newTender.valueAmount}
+                  onChange={e => setNewTender(prev => ({ ...prev, valueAmount: e.target.value }))}
+                  placeholder={t('private.tenders.form.valuePlaceholder')}
+                />
+              </label>
+              <label className={styles.modalLabel}>
+                <span>{t('private.tenders.form.description')}</span>
+                <textarea
+                  className={styles.modalTextarea}
+                  value={newTender.description}
+                  onChange={e => setNewTender(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder={t('private.tenders.form.descriptionPlaceholder')}
+                  rows={4}
+                />
+              </label>
+            </div>
+            <div className={styles.modalFooter}>
+              <SubmitButton variant="secondary" onClick={() => setShowCreateModal(false)}>
+                {t('common.cancel')}
+              </SubmitButton>
+              <SubmitButton variant="primary" onClick={handleCreateTender} disabled={creating}>
+                {creating ? t('common.loading') : t('common.create')}
+              </SubmitButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -10,6 +10,7 @@ router.use(verifyToken, resolveTenant)
 
 router.get('/', requireRole('manager'), controller.listUsers)
 router.get('/groups', requireRole('manager'), controller.listGroups)
+router.post('/', requireRole('manager'), controller.createUser)
 router.post('/invite', requireRole('manager'), controller.inviteUser)
 router.post('/groups', requireRole('manager'), controller.createGroup)
 router.post('/groups/:id/members', requireRole('manager'), controller.addGroupMember)

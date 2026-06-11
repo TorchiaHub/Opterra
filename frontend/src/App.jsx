@@ -1,3 +1,4 @@
+import './i18n'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { UIProvider } from './context/UIContext'

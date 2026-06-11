@@ -3,11 +3,13 @@ import * as authApi from '../api/auth.api'
 
 export const AuthContext = createContext(null)
 
-const STORAGE_KEY = 'tenderflow_user'
+const STORAGE_KEY = 'opterra_user'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
+      const token = localStorage.getItem('tenderflow_access_token')
+      if (!token) return null
       const stored = localStorage.getItem(STORAGE_KEY)
       return stored ? JSON.parse(stored) : null
     } catch {
@@ -24,36 +26,37 @@ export function AuthProvider({ children }) {
     }
   }, [user])
 
-  const checkSession = useCallback(async () => {
-    if (!user) {
+  useEffect(() => {
+    const token = localStorage.getItem('tenderflow_access_token')
+    if (!token) {
       setLoading(false)
       return
     }
-    try {
-      await authApi.getMe()
-    } catch {
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [user])
-
-  useEffect(() => {
-    checkSession()
+    authApi.getMe()
+      .then((profile) => {
+        setUser(profile)
+      })
+      .catch(() => {
+        setUser(null)
+        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem('tenderflow_access_token')
+        localStorage.removeItem('tenderflow_refresh_token')
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const login = useCallback(async (email, password) => {
     const result = await authApi.login({ email, password })
-    const userData = result.user
-    setUser(userData)
-    return userData
+    setUser(result.user)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(result.user))
+    return result.user
   }, [])
 
   const register = useCallback(async (payload) => {
     const result = await authApi.registerCompany(payload)
-    const userData = result.user
-    setUser(userData)
-    return userData
+    setUser(result.user)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(result.user))
+    return result.user
   }, [])
 
   const logout = useCallback(async () => {
@@ -62,6 +65,10 @@ export function AuthProvider({ children }) {
     } catch {
     } finally {
       setUser(null)
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem('opterra_access_token')
+      localStorage.removeItem('tenderflow_access_token')
+      localStorage.removeItem('tenderflow_refresh_token')
     }
   }, [])
 

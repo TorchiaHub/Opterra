@@ -112,6 +112,40 @@ async function createGroup(tenantId, name, description) {
   return { id: result.insertId, tenantId, name, description }
 }
 
+async function findUserByEmailInTenant(email, tenantId) {
+  const [rows] = await pool.query(
+    `SELECT id, email FROM users WHERE email = ? AND tenant_id = ? AND deleted_at IS NULL LIMIT 1`,
+    [email, tenantId]
+  )
+  return rows[0] || null
+}
+
+async function insertUser(tenantId, email, passwordHash, firstName, lastName) {
+  const [result] = await pool.query(
+    `INSERT INTO users (tenant_id, email, password_hash, first_name, last_name, status)
+     VALUES (?, ?, ?, ?, ?, 'active')`,
+    [tenantId, email, passwordHash, firstName, lastName]
+  )
+  return { id: result.insertId, tenantId, email, firstName, lastName }
+}
+
+async function assignUserRole(userId, roleCode, tenantId) {
+  const [role] = await pool.query(
+    'SELECT id FROM roles WHERE code = ? AND scope = ? LIMIT 1',
+    [roleCode, 'tenant']
+  )
+  if (role.length === 0) {
+    throw Object.assign(new Error(`Ruolo ${roleCode} non trovato.`), {
+      statusCode: 422,
+      code: 'VALIDATION_ERROR',
+    })
+  }
+  await pool.query(
+    `INSERT INTO user_roles (user_id, role_id, tenant_id) VALUES (?, ?, ?)`,
+    [userId, role[0].id, tenantId]
+  )
+}
+
 async function addGroupMember(groupId, userId, tenantId) {
   const [existing] = await pool.query(
     `SELECT id FROM group_members WHERE group_id = ? AND user_id = ? LIMIT 1`,
@@ -135,4 +169,7 @@ export {
   getGroupsByTenant,
   createGroup,
   addGroupMember,
+  findUserByEmailInTenant,
+  insertUser,
+  assignUserRole,
 }

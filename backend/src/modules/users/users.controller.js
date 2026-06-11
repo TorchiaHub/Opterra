@@ -85,6 +85,28 @@ async function inviteUser(req, res, next) {
   }
 }
 
+async function createUser(req, res, next) {
+  try {
+    const { email, firstName, lastName, password, roleCode } = req.body
+    if (!email || !firstName || !lastName || !password || !roleCode) {
+      return res.status(422).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'email, firstName, lastName, password e roleCode obbligatori.' },
+      })
+    }
+    const user = await service.createUser(req.tenantId, req.body, req.user.userId, req)
+    res.status(201).json({ success: true, data: user })
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({
+        success: false,
+        error: { code: err.code, message: err.message },
+      })
+    }
+    next(err)
+  }
+}
+
 async function listGroups(req, res, next) {
   try {
     const groups = await service.listGroups(req.tenantId)
@@ -136,4 +158,4 @@ async function addGroupMember(req, res, next) {
   }
 }
 
-export { listUsers, getUserDetail, changeRole, removeUser, inviteUser, listGroups, createGroup, addGroupMember }
+export { listUsers, getUserDetail, changeRole, removeUser, inviteUser, createUser, listGroups, createGroup, addGroupMember }

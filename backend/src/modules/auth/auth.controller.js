@@ -1,4 +1,5 @@
 import * as service from './auth.service.js'
+import * as queries from './auth.queries.js'
 import { validateRegisterPayload, validateLoginPayload, validateRefreshPayload } from './auth.validator.js'
 
 async function register(req, res, next) {
@@ -116,4 +117,32 @@ async function logout(req, res, next) {
   }
 }
 
-export { register, login, refresh, logout }
+async function me(req, res, next) {
+  try {
+    const user = await queries.getUserById(req.user.userId)
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Utente non trovato.' },
+      })
+    }
+    res.json({
+      success: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role_code,
+        tenantId: user.tenant_id,
+        status: user.status,
+        avatarUrl: user.avatar_url,
+        lastLoginAt: user.last_login_at,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export { register, login, refresh, logout, me }

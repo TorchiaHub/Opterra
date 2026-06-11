@@ -1,116 +1,275 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { SectionCard } from '../../components/cards/SectionCard'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { ErrorState } from '../../components/feedback/ErrorState'
+import { Loader } from '../../components/feedback/Loader'
+import { ConfirmModal } from '../../components/modals/ConfirmModal'
 import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import {
-  APP_ROUTES, TENDER_STATUS_LABELS, TENDER_STATUS_COLORS,
-  REQUIREMENT_STATUS_LABELS, TASK_STATUS_LABELS,
+  APP_ROUTES, TENDER_STATUS_COLORS,
 } from '../../utils/constants'
 import { formatCurrency } from '../../utils/format'
 import { formatDate } from '../../utils/date'
+import { getTenderById } from '../../api/tenders.api'
+import { getTasks, createTask, updateTask, deleteTask } from '../../api/tasks.api'
+import { getRequirementsByTender } from '../../api/requirements.api'
+import { getDocumentsByTender } from '../../api/documents.api'
 import styles from './TenderDetailPage.module.css'
 
-const TABS = [
-  { label: 'Overview', icon: 'layout' },
-  { label: 'Requisiti', icon: 'checkCircle' },
-  { label: 'Documenti', icon: 'file' },
-  { label: 'Task', icon: 'check' },
-  { label: 'AI', icon: 'robot' },
-]
-
-const mockTender = {
-  id: 1,
-  title: 'Fornitura software procurement',
-  issuer: 'Comune di Milano',
-  type: 'rfp',
-  status: 'active',
-  deadlineAt: '2026-07-12T10:00:00Z',
-  valueAmount: 120000,
-  description: 'Fornitura di un sistema software per la gestione del procurement e degli appalti pubblici. La piattaforma deve supportare la gestione end-to-end del ciclo di vita degli appalti, dalla pubblicazione dei bandi alla valutazione delle offerte.',
-  referenceCode: 'BANDO-2026-001',
-  createdAt: '2026-06-01T10:00:00Z',
-  contactName: 'Dott. Mario Rossi',
-  contactEmail: 'm.rossi@comune.milano.it',
-  category: 'Informatica e Software',
-  region: 'Lombardia',
+function normalizeTender(row) {
+  if (!row) return null
+  return {
+    ...row,
+    referenceCode: row.reference_code || '—',
+    valueAmount: row.value_amount,
+    deadlineAt: row.deadline_at,
+    createdAt: row.created_at,
+    category: row.category || row.type || '—',
+    region: row.region || '—',
+    contactName: row.contact_name || '—',
+    contactEmail: row.contact_email || '—',
+  }
 }
 
-const mockRequirements = [
-  { id: 1, title: 'Requisiti tecnici minimi', status: 'completed', priority: 'mandatory', category: 'Tecnico' },
-  { id: 2, title: 'Certificazione ISO 9001', status: 'completed', priority: 'mandatory', category: 'Qualita' },
-  { id: 3, title: 'Esperienza triennale', status: 'in_progress', priority: 'mandatory', category: 'Esperienza' },
-  { id: 4, title: 'Fatturato minimo 500k', status: 'completed', priority: 'important', category: 'Economico' },
-  { id: 5, title: 'Disponibilita supporto 24/7', status: 'pending', priority: 'important', category: 'Tecnico' },
-  { id: 6, title: 'Multilingue (IT, EN, DE)', status: 'pending', priority: 'optional', category: 'Funzionale' },
-  { id: 7, title: 'Integrazione con PagoPA', status: 'in_progress', priority: 'important', category: 'Tecnico' },
-  { id: 8, title: 'Hosting cloud EU', status: 'completed', priority: 'mandatory', category: 'Tecnico' },
-]
-
-const mockDocuments = [
-  { id: 1, name: 'Bando di gara.pdf', size: '2.4 MB', type: 'pdf', uploadedAt: '2026-06-01T10:00:00Z', uploadedBy: 'Marco Rossi' },
-  { id: 2, name: 'Capitolato tecnico.pdf', size: '1.8 MB', type: 'pdf', uploadedAt: '2026-06-02T14:30:00Z', uploadedBy: 'Laura Bianchi' },
-  { id: 3, name: 'Disciplinare di gara.pdf', size: '890 KB', type: 'pdf', uploadedAt: '2026-06-02T16:00:00Z', uploadedBy: 'Marco Rossi' },
-  { id: 4, name: 'Offerta tecnica.docx', size: '1.2 MB', type: 'doc', uploadedAt: '2026-06-05T09:15:00Z', uploadedBy: 'Giuseppe Verdi' },
-  { id: 5, name: 'Offerta economica.xlsx', size: '45 KB', type: 'xls', uploadedAt: '2026-06-05T11:00:00Z', uploadedBy: 'Giuseppe Verdi' },
-]
-
-const mockTasks = [
-  { id: 1, title: 'Analisi requisiti capitolato', status: 'done', assignee: 'Marco Rossi', dueAt: '2026-06-05T10:00:00Z', priority: 'high' },
-  { id: 2, title: 'Redazione offerta tecnica', status: 'in_progress', assignee: 'Laura Bianchi', dueAt: '2026-06-10T10:00:00Z', priority: 'high' },
-  { id: 3, title: 'Preparazione offerta economica', status: 'todo', assignee: 'Giuseppe Verdi', dueAt: '2026-06-10T10:00:00Z', priority: 'high' },
-  { id: 4, title: 'Verifica documentazione SOA', status: 'todo', assignee: 'Anna Neri', dueAt: '2026-06-08T10:00:00Z', priority: 'medium' },
-  { id: 5, title: 'Revisione finale e invio', status: 'todo', assignee: 'Marco Rossi', dueAt: '2026-06-11T10:00:00Z', priority: 'high' },
-]
-
-const mockAIInsights = [
-  { id: 1, type: 'opportunity', title: 'Alta probabilita di vittoria', description: 'Il profilo della tua azienda si allinea molto bene con i requisiti del bando. Focus su esperienza cloud e procurement.', confidence: 92 },
-  { id: 2, type: 'risk', title: 'Requisito critico mancante', description: 'Manca la certificazione ISO 27001 richiesta nel capitolato. Considera partnership o acquisizione rapida.', confidence: 85 },
-  { id: 3, type: 'suggestion', title: 'Migliora l\'offerta', description: 'Aggiungi un case study su progetto simile per Comune di Bologna. Aumenta la rilevanza.', confidence: 78 },
-]
-
-const priorityConfig = {
-  high: { label: 'Alta', color: 'danger' },
-  medium: { label: 'Media', color: 'warning' },
-  low: { label: 'Bassa', color: 'info' },
+function normalizeTask(row) {
+  if (!row) return row
+  return {
+    ...row,
+    dueAt: row.dueAt ?? row.due_at,
+    assignee: row.assignee ?? row.assigned_user_name ?? '',
+  }
 }
 
-const aiTypeConfig = {
-  opportunity: { icon: 'star', color: 'success', label: 'Opportunita' },
-  risk: { icon: 'alert', color: 'danger', label: 'Rischio' },
-  suggestion: { icon: 'sparkles', color: 'info', label: 'Suggerimento' },
+function formatBytes(bytes) {
+  if (!bytes) return '—'
+  const units = ['B', 'KB', 'MB', 'GB']
+  let i = 0
+  let v = Number(bytes)
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++ }
+  return `${v.toFixed(i === 0 ? 0 : 1)} ${units[i]}`
 }
 
 export function TenderDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const [tender, setTender] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState(0)
+  const [tasks, setTasks] = useState([])
+  const [tasksLoading, setTasksLoading] = useState(false)
+  const [showNewTask, setShowNewTask] = useState(false)
+  const [newTask, setNewTask] = useState({ title: '', priority: 'medium', assignee: '', dueAt: '' })
+  const [editingId, setEditingId] = useState(null)
+  const [editingTitle, setEditingTitle] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [requirements, setRequirements] = useState([])
+  const [documents, setDocuments] = useState([])
 
-  const completedReqs = mockRequirements.filter(r => r.status === 'completed').length
-  const totalReqs = mockRequirements.length
-  const progress = Math.round((completedReqs / totalReqs) * 100)
+  useEffect(() => {
+    const fetchTender = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const result = await getTenderById(id)
+        setTender(normalizeTender(result))
+      } catch (err) {
+        setError(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTender()
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    const fetchTasks = async () => {
+      setTasksLoading(true)
+      try {
+        const result = await getTasks(id)
+        setTasks(Array.isArray(result) ? result.map(normalizeTask) : [])
+      } catch {
+        setTasks([])
+      } finally {
+        setTasksLoading(false)
+      }
+    }
+    fetchTasks()
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    getRequirementsByTender(id)
+      .then(rows => setRequirements((Array.isArray(rows) ? rows : []).map(r => ({
+        id: r.id,
+        title: r.label || r.title || '',
+        category: r.item_type || '—',
+        status: r.status,
+        priority: r.priority,
+      }))))
+      .catch(() => setRequirements([]))
+    getDocumentsByTender(id)
+      .then(rows => setDocuments((Array.isArray(rows) ? rows : []).map(d => ({
+        id: d.id,
+        name: d.title || d.original_filename || '—',
+        size: formatBytes(d.size_bytes),
+        uploadedBy: d.uploaded_by_name || '—',
+        uploadedAt: d.created_at,
+      }))))
+      .catch(() => setDocuments([]))
+  }, [id])
+
+  async function handleCreateTask() {
+    if (!newTask.title.trim()) return
+    try {
+      const created = await createTask(id, {
+        title: newTask.title.trim(),
+        priority: newTask.priority,
+        assignee: newTask.assignee.trim() || undefined,
+        dueAt: newTask.dueAt || undefined,
+        status: 'todo',
+      })
+      setTasks(prev => [...prev, normalizeTask(created)])
+      setNewTask({ title: '', priority: 'medium', assignee: '', dueAt: '' })
+      setShowNewTask(false)
+    } catch {
+      // silently fail
+    }
+  }
+
+  async function handleUpdateTask(taskId, payload) {
+    try {
+      const updated = await updateTask(id, taskId, payload)
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...normalizeTask(updated) } : t))
+    } catch {
+      // silently fail
+    }
+  }
+
+  async function handleDeleteTask(taskId) {
+    try {
+      await deleteTask(id, taskId)
+      setTasks(prev => prev.filter(t => t.id !== taskId))
+      setConfirmDeleteId(null)
+    } catch {
+      // silently fail
+    }
+  }
+
+  function handleToggleStatus(task) {
+    const next = task.status === 'todo' ? 'in_progress' : task.status === 'in_progress' ? 'done' : 'todo'
+    handleUpdateTask(task.id, { status: next })
+  }
+
+  function handleStartEdit(task) {
+    setEditingId(task.id)
+    setEditingTitle(task.title)
+  }
+
+  function handleSaveEdit(taskId) {
+    if (editingTitle.trim() && editingTitle !== tasks.find(t => t.id === taskId)?.title) {
+      handleUpdateTask(taskId, { title: editingTitle.trim() })
+    }
+    setEditingId(null)
+    setEditingTitle('')
+  }
+
+  function handleCancelEdit() {
+    setEditingId(null)
+    setEditingTitle('')
+  }
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <ErrorState
+          title={t('private.tenderDetail.errorTitle')}
+          message={t('private.tenderDetail.errorMessage')}
+          onRetry={() => {
+            setLoading(true)
+            setError(null)
+            getTenderById(id)
+              .then(setTender)
+              .catch(setError)
+              .finally(() => setLoading(false))
+          }}
+        />
+      </div>
+    )
+  }
+
+  if (!tender) {
+    return (
+      <div className={styles.page}>
+        <EmptyState
+          icon="inbox"
+          title={t('private.tenderDetail.notFoundTitle')}
+          message={t('private.tenderDetail.notFoundMessage')}
+        />
+      </div>
+    )
+  }
+
+  const TABS = [
+    { label: t('private.tenderDetail.tabs.overview'), icon: 'layout' },
+    { label: t('private.tenderDetail.tabs.requirements'), icon: 'checkCircle' },
+    { label: t('private.tenderDetail.tabs.documents'), icon: 'file' },
+    { label: t('private.tenderDetail.tabs.tasks'), icon: 'check' },
+    { label: t('private.tenderDetail.tabs.ai'), icon: 'robot' },
+  ]
+
+  const priorityConfig = {
+    high: { label: t('private.tenderDetail.priority.high'), color: 'danger' },
+    medium: { label: t('private.tenderDetail.priority.medium'), color: 'warning' },
+    low: { label: t('private.tenderDetail.priority.low'), color: 'info' },
+  }
+
+  const aiTypeConfig = {
+    opportunity: { icon: 'star', color: 'success', label: t('private.tenderDetail.aiTypes.opportunity') },
+    risk: { icon: 'alert', color: 'danger', label: t('private.tenderDetail.aiTypes.risk') },
+    suggestion: { icon: 'sparkles', color: 'info', label: t('private.tenderDetail.aiTypes.suggestion') },
+  }
+
+  const aiInsights = tender.aiInsights ?? []
+
+  const completedReqs = requirements.filter(r => r.status === 'completed').length
+  const totalReqs = requirements.length
+  const remaining = totalReqs - completedReqs
+  const progress = totalReqs > 0 ? Math.round((completedReqs / totalReqs) * 100) : 0
 
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Workspace', to: APP_ROUTES.DASHBOARD },
-        { label: 'Gare', to: APP_ROUTES.TENDERS },
-        { label: mockTender.title },
+        { label: t('components.breadcrumbs.workspace'), to: APP_ROUTES.DASHBOARD },
+        { label: t('nav.tenders'), to: APP_ROUTES.TENDERS },
+        { label: tender.title },
       ]} />
       <PageHeader
-        title={mockTender.title}
-        subtitle={mockTender.issuer}
+        title={tender.title}
+        subtitle={tender.issuer}
         actions={
           <div className={styles.headerActions}>
             <StatusBadge
-              label={TENDER_STATUS_LABELS[mockTender.status]}
-              variant={TENDER_STATUS_COLORS[mockTender.status]}
+              label={t(`status.${tender.status}`)}
+              variant={TENDER_STATUS_COLORS[tender.status]}
             />
-            <button className={styles.iconBtn} onClick={() => {}} title="Modifica">
+            <button className={styles.iconBtn} onClick={() => {}} title={t('private.tenderDetail.editButton')}>
               <Icon name="edit" size={18} />
             </button>
           </div>
@@ -132,85 +291,85 @@ export function TenderDetailPage() {
 
       {activeTab === 0 && (
         <div className={styles.overviewGrid}>
-          <SectionCard title="Dettagli gara">
+          <SectionCard title={t('private.tenderDetail.details')}>
             <div className={styles.infoGrid}>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="tag" size={14} /> Codice
+                  <Icon name="tag" size={14} /> {t('private.tenderDetail.fields.code')}
                 </span>
-                <span className={styles.infoValue}>{mockTender.referenceCode}</span>
+                <span className={styles.infoValue}>{tender.referenceCode}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="building" size={14} /> Ente banditore
+                  <Icon name="building" size={14} /> {t('private.tenderDetail.fields.issuer')}
                 </span>
-                <span className={styles.infoValue}>{mockTender.issuer}</span>
+                <span className={styles.infoValue}>{tender.issuer}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="file" size={14} /> Tipo
+                  <Icon name="file" size={14} /> {t('private.tenderDetail.fields.type')}
                 </span>
-                <span className={styles.infoValue}>{mockTender.type.toUpperCase()}</span>
+                <span className={styles.infoValue}>{tender.type?.toUpperCase()}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="tag" size={14} /> Categoria
+                  <Icon name="tag" size={14} /> {t('private.tenderDetail.fields.category')}
                 </span>
-                <span className={styles.infoValue}>{mockTender.category}</span>
+                <span className={styles.infoValue}>{tender.category}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="tag" size={14} /> Valore
+                  <Icon name="tag" size={14} /> {t('private.tenderDetail.fields.value')}
                 </span>
-                <span className={styles.infoValue}>{formatCurrency(mockTender.valueAmount)}</span>
+                <span className={styles.infoValue}>{formatCurrency(tender.valueAmount)}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="calendar" size={14} /> Scadenza
+                  <Icon name="calendar" size={14} /> {t('private.tenderDetail.fields.deadline')}
                 </span>
-                <span className={styles.infoValue}>{formatDate(mockTender.deadlineAt)}</span>
+                <span className={styles.infoValue}>{formatDate(tender.deadlineAt)}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="globe" size={14} /> Regione
+                  <Icon name="globe" size={14} /> {t('private.tenderDetail.fields.region')}
                 </span>
-                <span className={styles.infoValue}>{mockTender.region}</span>
+                <span className={styles.infoValue}>{tender.region}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="clock" size={14} /> Creata il
+                  <Icon name="clock" size={14} /> {t('private.tenderDetail.fields.createdOn')}
                 </span>
-                <span className={styles.infoValue}>{formatDate(mockTender.createdAt)}</span>
+                <span className={styles.infoValue}>{formatDate(tender.createdAt)}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="user" size={14} /> Contatto
+                  <Icon name="user" size={14} /> {t('private.tenderDetail.fields.contact')}
                 </span>
-                <span className={styles.infoValue}>{mockTender.contactName}</span>
+                <span className={styles.infoValue}>{tender.contactName}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>
-                  <Icon name="mail" size={14} /> Email
+                  <Icon name="mail" size={14} /> {t('private.tenderDetail.fields.email')}
                 </span>
-                <span className={styles.infoValue}>{mockTender.contactEmail}</span>
+                <span className={styles.infoValue}>{tender.contactEmail}</span>
               </div>
             </div>
           </SectionCard>
 
           <div className={styles.overviewRight}>
-            <SectionCard title="Descrizione">
-              <p className={styles.description}>{mockTender.description}</p>
+            <SectionCard title={t('private.tenderDetail.description')}>
+              <p className={styles.description}>{tender.description}</p>
             </SectionCard>
 
-            <SectionCard title="Progresso Requisiti">
+            <SectionCard title={t('private.tenderDetail.progress')}>
               <div className={styles.progressBar}>
                 <div className={styles.progressFill} style={{ width: `${progress}%` }}>
                   <span className={styles.progressLabel}>{progress}%</span>
                 </div>
               </div>
               <div className={styles.progressMeta}>
-                <span>{completedReqs} / {totalReqs} completati</span>
-                <span className={styles.progressRemaining}>{totalReqs - completedReqs} in attesa</span>
+                <span>{t('private.tenderDetail.progressCompleted', { completed: completedReqs, total: totalReqs })}</span>
+                <span className={styles.progressRemaining}>{t('private.tenderDetail.progressRemaining', { remaining })}</span>
               </div>
             </SectionCard>
           </div>
@@ -218,7 +377,7 @@ export function TenderDetailPage() {
       )}
 
       {activeTab === 1 && (
-        <SectionCard title="Requisiti" actions={
+        <SectionCard title={t('private.tenderDetail.tabs.requirements')} actions={
           <div className={styles.progressHeader}>
             <div className={styles.progressBarSmall}>
               <div className={styles.progressFillSmall} style={{ width: `${progress}%` }} />
@@ -227,7 +386,7 @@ export function TenderDetailPage() {
           </div>
         }>
           <div className={styles.requirementsList}>
-            {mockRequirements.map((req, index) => (
+            {requirements.map((req, index) => (
               <div key={req.id} className={styles.reqItem} style={{ animationDelay: `${index * 0.04}s` }}>
                 <div className={styles.reqCheckbox}>
                   <Icon name={req.status === 'completed' ? 'circleCheck' : req.status === 'in_progress' ? 'circleDot' : 'circle'} size={20} />
@@ -238,7 +397,7 @@ export function TenderDetailPage() {
                   </span>
                   <div className={styles.reqMeta}>
                     <span className={styles.reqCategory}>{req.category}</span>
-                    <StatusBadge label={REQUIREMENT_STATUS_LABELS[req.status]} variant={req.status === 'completed' ? 'success' : req.status === 'in_progress' ? 'info' : 'neutral'} showDot={false} />
+                    <StatusBadge label={t(`status.${req.status}`)} variant={req.status === 'completed' ? 'success' : req.status === 'in_progress' ? 'info' : 'neutral'} showDot={false} />
                   </div>
                 </div>
                 <div className={styles.reqPriority}>
@@ -253,17 +412,17 @@ export function TenderDetailPage() {
       )}
 
       {activeTab === 2 && (
-        <SectionCard title="Documenti" actions={
+        <SectionCard title={t('private.tenderDetail.tabs.documents')} actions={
           <SubmitButton variant="secondary" onClick={() => {}} className={styles.uploadBtn}>
             <Icon name="upload" size={16} />
-            <span>Carica</span>
+            <span>{t('private.tenderDetail.upload')}</span>
           </SubmitButton>
         }>
           <div className={styles.documentsList}>
-            {mockDocuments.length === 0 ? (
-              <EmptyState icon="file" title="Nessun documento" message="Carica i documenti relativi alla gara." />
+            {documents.length === 0 ? (
+              <EmptyState icon="file" title={t('private.tenderDetail.noDocuments')} message={t('private.tenderDetail.noDocumentsMessage')} />
             ) : (
-              mockDocuments.map((doc, index) => (
+              documents.map((doc, index) => (
                 <div key={doc.id} className={styles.docItem} style={{ animationDelay: `${index * 0.04}s` }}>
                   <div className={styles.docIcon}>
                     <Icon name="file" size={24} />
@@ -271,14 +430,14 @@ export function TenderDetailPage() {
                   <div className={styles.docInfo}>
                     <span className={styles.docName}>{doc.name}</span>
                     <span className={styles.docMeta}>
-                      {doc.size} · Caricato da {doc.uploadedBy} · {formatDate(doc.uploadedAt)}
+                      {doc.size} · {t('private.tenderDetail.uploadedBy')} {doc.uploadedBy} · {formatDate(doc.uploadedAt)}
                     </span>
                   </div>
                   <div className={styles.docActions}>
-                    <button className={styles.docActionBtn} title="Scarica">
+                    <button className={styles.docActionBtn} title={t('private.tenderDetail.download')}>
                       <Icon name="download" size={16} />
                     </button>
-                    <button className={styles.docActionBtn} title="Elimina">
+                    <button className={styles.docActionBtn} title={t('private.tenderDetail.deleteDoc')}>
                       <Icon name="trash" size={16} />
                     </button>
                   </div>
@@ -290,50 +449,153 @@ export function TenderDetailPage() {
       )}
 
       {activeTab === 3 && (
-        <SectionCard title="Task">
-          <div className={styles.kanbanBoard}>
-            {['todo', 'in_progress', 'done'].map(status => (
-              <div key={status} className={styles.kanbanColumn}>
-                <div className={styles.kanbanHeader}>
-                  <StatusBadge label={TASK_STATUS_LABELS[status]} variant={status === 'done' ? 'success' : status === 'in_progress' ? 'info' : 'neutral'} />
-                  <span className={styles.kanbanCount}>
-                    {mockTasks.filter(t => t.status === status).length}
-                  </span>
-                </div>
-                <div className={styles.kanbanCards}>
-                  {mockTasks
-                    .filter(t => t.status === status)
-                    .map((task, index) => (
-                      <div key={task.id} className={styles.kanbanCard} style={{ animationDelay: `${index * 0.05}s` }}>
-                        <div className={styles.kanbanCardHeader}>
-                          <span className={`${styles.kanbanPriority} ${styles[`priority${task.priority}`]}`}>
-                            {priorityConfig[task.priority].label}
-                          </span>
-                        </div>
-                        <span className={styles.kanbanCardTitle}>{task.title}</span>
-                        <div className={styles.kanbanCardFooter}>
-                          <span className={styles.kanbanAssignee}>
-                            <Icon name="user" size={12} />
-                            {task.assignee}
-                          </span>
-                          <span className={styles.kanbanDue}>
-                            <Icon name="calendar" size={12} />
-                            {formatDate(task.dueAt)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+        <SectionCard title={t('private.tenderDetail.tabs.tasks')} actions={
+          <button className={styles.newTaskBtn} onClick={() => setShowNewTask(prev => !prev)}>
+            <Icon name="plus" size={16} />
+            <span>{t('private.tenderDetail.newTask')}</span>
+          </button>
+        }>
+          {showNewTask && (
+            <div className={styles.newTaskForm}>
+              <div className={styles.newTaskFormRow}>
+                <input
+                  className={styles.newTaskInput}
+                  placeholder={t('private.tenderDetail.taskTitlePlaceholder')}
+                  value={newTask.title}
+                  onChange={e => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+                />
+                <select
+                  className={styles.newTaskSelect}
+                  value={newTask.priority}
+                  onChange={e => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
+                >
+                  <option value="low">{priorityConfig.low.label}</option>
+                  <option value="medium">{priorityConfig.medium.label}</option>
+                  <option value="high">{priorityConfig.high.label}</option>
+                </select>
               </div>
-            ))}
-          </div>
+              <div className={styles.newTaskFormRow}>
+                <input
+                  className={styles.newTaskInput}
+                  placeholder={t('private.tenderDetail.taskAssigneePlaceholder')}
+                  value={newTask.assignee}
+                  onChange={e => setNewTask(prev => ({ ...prev, assignee: e.target.value }))}
+                />
+                <input
+                  className={styles.newTaskInput}
+                  type="date"
+                  value={newTask.dueAt}
+                  onChange={e => setNewTask(prev => ({ ...prev, dueAt: e.target.value }))}
+                />
+              </div>
+              <div className={styles.newTaskActions}>
+                <button className={styles.cancelBtn} onClick={() => { setShowNewTask(false); setNewTask({ title: '', priority: 'medium', assignee: '', dueAt: '' }) }}>
+                  {t('common.cancel')}
+                </button>
+                <button className={styles.saveBtn} onClick={handleCreateTask}>
+                  {t('common.save')}
+                </button>
+              </div>
+            </div>
+          )}
+          {tasksLoading ? (
+            <Loader />
+          ) : tasks.length === 0 && !showNewTask ? (
+            <EmptyState
+              icon="check"
+              title={t('private.tenderDetail.noTasks')}
+              message={t('private.tenderDetail.noTasksMessage')}
+            />
+          ) : (
+            <div className={styles.kanbanBoard}>
+              {['todo', 'in_progress', 'done'].map(status => (
+                <div key={status} className={styles.kanbanColumn}>
+                  <div className={styles.kanbanHeader}>
+                    <StatusBadge label={t(`status.${status}`)} variant={status === 'done' ? 'success' : status === 'in_progress' ? 'info' : 'neutral'} />
+                    <span className={styles.kanbanCount}>
+                      {tasks.filter(t => t.status === status).length}
+                    </span>
+                  </div>
+                  <div className={styles.kanbanCards}>
+                    {tasks
+                      .filter(t => t.status === status)
+                      .map((task, index) => (
+                        <div key={task.id} className={styles.kanbanCard} style={{ animationDelay: `${index * 0.05}s` }}>
+                          <div className={styles.kanbanCardTop}>
+                            <button
+                              className={styles.kanbanCheckbox}
+                              onClick={() => handleToggleStatus(task)}
+                              title={t('private.tenderDetail.toggleStatus')}
+                            >
+                              <Icon
+                                name={task.status === 'done' ? 'circleCheck' : task.status === 'in_progress' ? 'circleDot' : 'circle'}
+                                size={20}
+                              />
+                            </button>
+                            <span className={`${styles.kanbanPriority} ${styles[`priority${task.priority}`]}`}>
+                              {(priorityConfig[task.priority] || priorityConfig.medium).label}
+                            </span>
+                            <button
+                              className={styles.kanbanDeleteBtn}
+                              onClick={() => setConfirmDeleteId(task.id)}
+                              title={t('private.tenderDetail.deleteTask')}
+                            >
+                              <Icon name="trash" size={14} />
+                            </button>
+                          </div>
+                          {editingId === task.id ? (
+                            <input
+                              className={styles.editInput}
+                              value={editingTitle}
+                              onChange={e => setEditingTitle(e.target.value)}
+                              onBlur={() => handleSaveEdit(task.id)}
+                              onKeyDown={e => e.key === 'Enter' ? handleSaveEdit(task.id) : e.key === 'Escape' ? handleCancelEdit() : null}
+                              autoFocus
+                            />
+                          ) : (
+                            <span
+                              className={styles.kanbanCardTitle}
+                              onClick={() => handleStartEdit(task)}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              {task.title}
+                            </span>
+                          )}
+                          <div className={styles.kanbanCardFooter}>
+                            <span className={styles.kanbanAssignee}>
+                              <Icon name="user" size={12} />
+                              {task.assignee || '-'}
+                            </span>
+                            <span className={styles.kanbanDue}>
+                              <Icon name="calendar" size={12} />
+                              {task.dueAt ? formatDate(task.dueAt) : '-'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </SectionCard>
       )}
 
+      <ConfirmModal
+        open={confirmDeleteId !== null}
+        title={t('components.confirmModal.defaultTitle')}
+        message={t('components.confirmModal.defaultMessage')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => handleDeleteTask(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+        danger
+      />
+
       {activeTab === 4 && (
-        <SectionCard title="AI Insights">
+        <SectionCard title={t('private.tenderDetail.aiInsights')}>
           <div className={styles.aiList}>
-            {mockAIInsights.map((insight, index) => (
+            {aiInsights.map((insight, index) => (
               <div key={insight.id} className={styles.aiCard} style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className={`${styles.aiIcon} ${styles[`ai${insight.type}`]}`}>
                   <Icon name={aiTypeConfig[insight.type].icon} size={24} />
@@ -350,7 +612,7 @@ export function TenderDetailPage() {
                     <div className={styles.aiConfidenceBar}>
                       <div className={styles.aiConfidenceFill} style={{ width: `${insight.confidence}%` }} />
                     </div>
-                    <span className={styles.aiConfidenceLabel}>Confidenza {insight.confidence}%</span>
+                    <span className={styles.aiConfidenceLabel}>{t('private.tenderDetail.confidence', { percent: insight.confidence })}</span>
                   </div>
                 </div>
               </div>

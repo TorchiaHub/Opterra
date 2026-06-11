@@ -1,30 +1,20 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { KpiCard } from '../../components/cards/KpiCard'
 import { SectionCard } from '../../components/cards/SectionCard'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { Loader } from '../../components/feedback/Loader'
 import Icon from '../../components/Icon'
-import { APP_ROUTES, TENDER_STATUS_LABELS, TENDER_STATUS_COLORS } from '../../utils/constants'
+import { APP_ROUTES, TENDER_STATUS_COLORS } from '../../utils/constants'
 import { formatCurrency } from '../../utils/format'
 import { formatRelative, formatDate } from '../../utils/date'
+import { getTenderDashboard, getTenders } from '../../api/tenders.api'
+import { useAuth } from '../../hooks/useAuth'
 import styles from './DashboardPage.module.css'
-
-const kpiData = [
-  { label: 'Gare Attive', value: '12', trend: 2, trendLabel: '+2 questa settimana', icon: 'briefcase' },
-  { label: 'In Scadenza', value: '4', trend: -1, trendLabel: 'urgenti', icon: 'clock' },
-  { label: 'Valore Totale', value: '€ 1.2M', trend: 8, trendLabel: 'vs mese scorso', icon: 'tag' },
-  { label: 'Task Assegnati', value: '23', trend: 5, trendLabel: 'da completare', icon: 'checkCircle' },
-]
-
-const recentTenders = [
-  { id: 1, title: 'Fornitura software procurement', issuer: 'Comune di Milano', status: 'active', deadlineAt: '2026-07-12T10:00:00Z', valueAmount: 120000 },
-  { id: 2, title: 'Servizi di consulenza ICT', issuer: 'Regione Lazio', status: 'in_review', deadlineAt: '2026-06-28T10:00:00Z', valueAmount: 85000 },
-  { id: 3, title: 'Manutenzione impianti sportivi', issuer: 'ASL Roma', status: 'draft', deadlineAt: '2026-08-01T10:00:00Z', valueAmount: 200000 },
-  { id: 4, title: 'Fornitura arredi ufficio', issuer: 'Comune di Torino', status: 'won', deadlineAt: '2026-05-15T10:00:00Z', valueAmount: 45000 },
-  { id: 5, title: 'Servizi di pulizia e sanificazione', issuer: 'Provincia di Milano', status: 'active', deadlineAt: '2026-06-25T10:00:00Z', valueAmount: 60000 },
-]
 
 const recentActivities = [
   { id: 1, user: 'Marco Rossi', action: 'ha creato la gara', target: 'Fornitura software procurement', time: '2026-06-10T14:30:00Z', icon: 'plus' },
@@ -41,28 +31,66 @@ const tasks = [
   { id: 4, title: 'Verifica fatturato', tender: 'Arredi ufficio', dueAt: '2026-06-10T10:00:00Z', priority: 'low', status: 'done' },
 ]
 
-const priorityConfig = {
-  high: { label: 'Alta', color: 'danger', icon: 'circleAlert' },
-  medium: { label: 'Media', color: 'warning', icon: 'circleDot' },
-  low: { label: 'Bassa', color: 'info', icon: 'circle' },
-}
-
-const taskStatusConfig = {
-  todo: { label: 'Da fare', variant: 'neutral' },
-  in_progress: { label: 'In corso', variant: 'info' },
-  done: { label: 'Completata', variant: 'success' },
-}
-
 export function DashboardPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const { user } = useAuth()
+  const [stats, setStats] = useState(null)
+  const [tenders, setTenders] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [dashboardStats, tendersData] = await Promise.allSettled([
+          getTenderDashboard(),
+          getTenders({ pageSize: 5, sortBy: 'deadline_at', sortOrder: 'ASC' }),
+        ])
+        if (dashboardStats.status === 'fulfilled') setStats(dashboardStats.value)
+        if (tendersData.status === 'fulfilled') setTenders(Array.isArray(tendersData.value) ? tendersData.value : tendersData.value?.data || [])
+      } catch {
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const kpiData = [
+    { label: t('private.dashboard.activeTenders'), value: stats?.active ?? '0', trend: stats?.active > 0 ? 2 : 0, trendLabel: t('private.dashboard.trendThisWeek'), icon: 'briefcase' },
+    { label: t('private.dashboard.expiringSoon'), value: stats?.overdue ?? '0', trend: stats?.overdue > 0 ? -1 : 0, trendLabel: t('private.dashboard.trendUrgent'), icon: 'clock' },
+    { label: t('private.dashboard.totalValue'), value: stats ? formatCurrency(stats.total_value) : '€0', trend: 8, trendLabel: t('private.dashboard.trendVsLastMonth'), icon: 'tag' },
+    { label: t('private.dashboard.assignedTasks'), value: '23', trend: 5, trendLabel: t('private.dashboard.trendToComplete'), icon: 'checkCircle' },
+  ]
+
+  const priorityConfig = {
+    high: { label: t('private.dashboard.priority.high'), color: 'danger', icon: 'circleAlert' },
+    medium: { label: t('private.dashboard.priority.medium'), color: 'warning', icon: 'circleDot' },
+    low: { label: t('private.dashboard.priority.low'), color: 'info', icon: 'circle' },
+  }
+
+  const taskStatusConfig = {
+    todo: { label: t('private.dashboard.taskStatus.todo'), variant: 'neutral' },
+    in_progress: { label: t('private.dashboard.taskStatus.inProgress'), variant: 'info' },
+    done: { label: t('private.dashboard.taskStatus.done'), variant: 'success' },
+  }
+
+  if (loading) {
+    return <Loader label={t('common.loading')} />
+  }
+
+  const displayTenders = tenders.length > 0 ? tenders : []
 
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
-        { label: 'Workspace', to: APP_ROUTES.DASHBOARD },
-        { label: 'Dashboard' },
+        { label: t('components.breadcrumbs.workspace'), to: APP_ROUTES.DASHBOARD },
+        { label: t('private.dashboard.title') },
       ]} />
-      <PageHeader title="Dashboard" subtitle="Panoramica del tuo workspace gare" />
+      <PageHeader
+        title={`${t('private.dashboard.title')}${user?.firstName ? `, ${user.firstName}` : ''}`}
+        subtitle={t('private.dashboard.subtitle')}
+      />
 
       <div className={styles.kpiGrid}>
         {kpiData.map((kpi, i) => (
@@ -71,22 +99,22 @@ export function DashboardPage() {
       </div>
 
       <div className={styles.chartsSection}>
-        <SectionCard title="Analisi e Trend" icon="chart">
+        <SectionCard title={t('private.dashboard.analysis')} icon="chart">
           <div className={styles.chartsPlaceholder}>
             <Icon name="layers" size={40} className={styles.chartsIcon} />
-            <p className={styles.chartsText}>Area grafici e analisi in arrivo</p>
-            <span className={styles.chartsSub}>Dashboard interattiva con trend storici</span>
+            <p className={styles.chartsText}>{t('private.dashboard.analysisPlaceholder')}</p>
+            <span className={styles.chartsSub}>{t('private.dashboard.analysisPlaceholderSub')}</span>
           </div>
         </SectionCard>
       </div>
 
       <div className={styles.grid}>
-        <SectionCard title="Gare in scadenza" noPadding>
-          {recentTenders.length === 0 ? (
-            <EmptyState icon="inbox" title="Nessuna gara" message="Le gare in scadenza appariranno qui." />
+        <SectionCard title={t('private.dashboard.expiringTenders')} noPadding>
+          {displayTenders.length === 0 ? (
+            <EmptyState icon="inbox" title={t('private.dashboard.noTenders')} message={t('private.dashboard.noTendersMessage')} />
           ) : (
             <div className={styles.list}>
-              {recentTenders.map((tender, index) => (
+              {displayTenders.map((tender, index) => (
                 <div
                   key={tender.id}
                   className={styles.listItem}
@@ -99,13 +127,13 @@ export function DashboardPage() {
                   </div>
                   <div className={styles.listRight}>
                     <StatusBadge
-                      label={TENDER_STATUS_LABELS[tender.status]}
-                      variant={TENDER_STATUS_COLORS[tender.status]}
+                      label={t(`status.${tender.status}`) || tender.status}
+                      variant={TENDER_STATUS_COLORS[tender.status] || 'neutral'}
                     />
-                    <div className={styles.listValue}>{formatCurrency(tender.valueAmount)}</div>
+                    <div className={styles.listValue}>{formatCurrency(tender.value_amount)}</div>
                     <div className={styles.listDate}>
                       <Icon name="calendar" size={12} />
-                      {formatRelative(tender.deadlineAt)}
+                      {formatRelative(tender.deadline_at)}
                     </div>
                   </div>
                 </div>
@@ -114,9 +142,9 @@ export function DashboardPage() {
           )}
         </SectionCard>
 
-        <SectionCard title="Attivita recenti" noPadding>
+        <SectionCard title={t('private.dashboard.recentActivity')} noPadding>
           {recentActivities.length === 0 ? (
-            <EmptyState icon="activity" title="Nessuna attivita" message="Le attivita recenti appariranno qui." />
+            <EmptyState icon="activity" title={t('private.dashboard.noActivity')} message={t('private.dashboard.noActivityMessage')} />
           ) : (
             <div className={styles.list}>
               {recentActivities.map((activity, index) => (
@@ -138,9 +166,9 @@ export function DashboardPage() {
       </div>
 
       <div className={styles.tasksSection}>
-        <SectionCard title="Task Prioritari" noPadding>
+        <SectionCard title={t('private.dashboard.priorityTasks')} noPadding>
           {tasks.length === 0 ? (
-            <EmptyState icon="inbox" title="Nessun task" message="Tutti i task sono completati." />
+            <EmptyState icon="inbox" title={t('private.dashboard.noTasks')} message={t('private.dashboard.noTasksMessage')} />
           ) : (
             <div className={styles.list}>
               {tasks.map((task, index) => (
