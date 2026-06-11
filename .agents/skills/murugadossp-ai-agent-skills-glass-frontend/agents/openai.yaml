@@ -1,0 +1,8 @@
+interface:
+  display_name: "Glass Frontend"
+  short_description: "Modern glass UI with light/dark themes"
+  brand_color: "#3B82F6"
+  default_prompt: "Use $glass-frontend to build a polished app UI with glassmorphism, Plus Jakarta Sans, and light/dark themes by default."
+
+policy:
+  allow_implicit_invocation: true
