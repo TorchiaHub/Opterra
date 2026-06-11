@@ -1,3 +1,4 @@
+import Icon from '../Icon'
 import styles from './SubmitButton.module.css'
 
 export function SubmitButton({
@@ -11,7 +12,11 @@ export function SubmitButton({
       disabled={disabled || loading}
       onClick={onClick}
     >
-      {loading && <span className={styles.spinner} />}
+      {loading && (
+        <span className={styles.spinner}>
+          <Icon name="refresh" size={16} className={styles.spinnerIcon} />
+        </span>
+      )}
       {children}
     </button>
   )

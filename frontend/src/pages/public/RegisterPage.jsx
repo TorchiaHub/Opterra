@@ -1,131 +1,181 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { TextInput } from '../../components/forms/TextInput'
-import { SubmitButton } from '../../components/forms/SubmitButton'
-import { APP_ROUTES } from '../../utils/constants'
-import styles from './RegisterPage.module.css'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Icon from '../../components/Icon.jsx';
+import styles from './RegisterPage.module.css';
 
-export function RegisterPage() {
-  const { register } = useAuth()
-  const navigate = useNavigate()
-  const [form, setForm] = useState({
-    companyName: '', firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+export default function RegisterPage() {
+  const [agreed, setAgreed] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    setError('')
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    if (form.password !== form.confirmPassword) {
-      setError('Le password non coincidono')
-      setLoading(false)
-      return
-    }
-    try {
-      await register({
-        companyName: form.companyName,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        password: form.password,
-      })
-      navigate(APP_ROUTES.DASHBOARD)
-    } catch (err) {
-      setError(err?.response?.data?.error?.message || 'Errore durante la registrazione')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
 
   return (
     <div className={styles.page}>
+      <div className={styles.gridPattern} />
       <div className={styles.container}>
-        <div className={styles.card}>
-          <div className={styles.brand}>
-            <img src="/opterra-logo.png" alt="Opterra" className={styles.logo} />
-            <span className={styles.brandName}>TenderFlow</span>
-            <p className={styles.brandSub}>Crea il tuo workspace aziendale</p>
+        {!submitted ? (
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.logoWrapper}>
+                <Icon name="sparkles" size={40} className={styles.logo} />
+              </div>
+              <h1 className={styles.title}>Create your account</h1>
+              <p className={styles.subtitle}>Start your free trial today</p>
+            </div>
+
+            <form className={styles.form} onSubmit={handleSubmit}>
+              <div className={styles.field}>
+                <label className={styles.label}>
+                  <Icon name="building" size={16} className={styles.labelIcon} />
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  className={styles.input}
+                  placeholder="Your company"
+                />
+              </div>
+
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <Icon name="user" size={16} className={styles.labelIcon} />
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className={styles.input}
+                    placeholder="John"
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <Icon name="user" size={16} className={styles.labelIcon} />
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className={styles.input}
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>
+                  <Icon name="mail" size={16} className={styles.labelIcon} />
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  className={styles.input}
+                  placeholder="john@company.com"
+                />
+              </div>
+
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <Icon name="lock" size={16} className={styles.labelIcon} />
+                    Password
+                  </label>
+                  <div className={styles.passwordWrapper}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      className={styles.input}
+                      placeholder="Min 8 characters"
+                    />
+                    <button
+                      type="button"
+                      className={styles.eyeBtn}
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      <Icon name="eye" size={18} />
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <Icon name="lock" size={16} className={styles.labelIcon} />
+                    Confirm
+                  </label>
+                  <div className={styles.passwordWrapper}>
+                    <input
+                      type={showConfirm ? 'text' : 'password'}
+                      required
+                      className={styles.input}
+                      placeholder="Repeat password"
+                    />
+                    <button
+                      type="button"
+                      className={styles.eyeBtn}
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      tabIndex={-1}
+                    >
+                      <Icon name="eye" size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className={styles.checkboxInput}
+                  required
+                />
+                <span className={styles.checkboxCheck}>
+                  <Icon name="check" size={12} />
+                </span>
+                <span className={styles.checkboxLabel}>
+                  I agree to the <Link to="/terms" className={styles.termsLink}>Terms of Service</Link> and <Link to="/privacy" className={styles.termsLink}>Privacy Policy</Link>
+                </span>
+              </label>
+
+              <button type="submit" className={styles.submitBtn}>
+                <Icon name="arrowRight" size={18} />
+                Create Account
+              </button>
+            </form>
+
+            <div className={styles.footer}>
+              <p className={styles.footerText}>
+                Already have an account?{' '}
+                <Link to="/login" className={styles.footerLink}>
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </div>
-
-          {error && <div className={styles.error}>{error}</div>}
-
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <TextInput
-              label="Nome azienda"
-              name="companyName"
-              value={form.companyName}
-              onChange={handleChange}
-              placeholder="Azienda S.p.A."
-              required
-            />
-            <div className={styles.row}>
-              <TextInput
-                label="Nome"
-                name="firstName"
-                value={form.firstName}
-                onChange={handleChange}
-                placeholder="Mario"
-                required
-              />
-              <TextInput
-                label="Cognome"
-                name="lastName"
-                value={form.lastName}
-                onChange={handleChange}
-                placeholder="Rossi"
-                required
-              />
+        ) : (
+          <div className={styles.successCard}>
+            <div className={styles.successIcon}>
+              <Icon name="checkCircle" size={64} />
             </div>
-            <TextInput
-              label="Email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="mario.rossi@azienda.it"
-              required
-            />
-            <div className={styles.row}>
-              <TextInput
-                label="Password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Min. 8 caratteri"
-                required
-              />
-              <TextInput
-                label="Conferma password"
-                name="confirmPassword"
-                type="password"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="Ripeti password"
-                required
-              />
-            </div>
-            <div className={styles.submitBtn}>
-              <SubmitButton loading={loading} variant="primary">
-                Registra azienda
-              </SubmitButton>
-            </div>
-          </form>
-
-          <div className={styles.footer}>
-            Hai già un account?{' '}
-            <Link to={APP_ROUTES.LOGIN} className={styles.link}>Accedi</Link>
+            <h2 className={styles.successTitle}>Account Created!</h2>
+            <p className={styles.successText}>
+              Welcome to Opterra. Check your email to verify your account and get started.
+            </p>
+            <Link to="/login" className={styles.successBtn}>
+              <Icon name="arrowRight" size={18} />
+              Go to Login
+            </Link>
           </div>
-        </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

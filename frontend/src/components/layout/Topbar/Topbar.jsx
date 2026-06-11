@@ -1,9 +1,10 @@
 import { useContext } from 'react'
 import { UIContext } from '../../../context/UIContext'
 import { useAuth } from '../../../hooks/useAuth'
+import Icon from '../../Icon'
 import styles from './Topbar.module.css'
 
-export function Topbar() {
+export function Topbar({ hasNotifications = false }) {
   const { toggleSidebar, toggleChatbot, chatbotOpen } = useContext(UIContext)
   const { user, isAuthenticated, logout } = useAuth()
 
@@ -18,19 +19,20 @@ export function Topbar() {
     <header className={styles.topbar}>
       <div className={styles.left}>
         <button className={styles.menuBtn} onClick={toggleSidebar} aria-label="Toggle sidebar">
-          ☰
+          <Icon name="menu" size={20} />
         </button>
       </div>
       <div className={styles.right}>
         <button className={styles.iconBtn} aria-label="Notifiche">
-          🔔
-          <span className={styles.notificationDot} />
+          <Icon name="notification" size={20} />
+          {hasNotifications && <span className={styles.notificationDot} />}
         </button>
         <button
           className={`${styles.chatBtn} ${chatbotOpen ? styles.chatBtnActive : ''}`}
           onClick={toggleChatbot}
         >
-          💬 Chat
+          <Icon name="chat" size={16} />
+          <span>Chat</span>
         </button>
         <button className={styles.avatarBtn} title={`${user?.firstName} ${user?.lastName}`}>
           {getInitials(user?.firstName + ' ' + user?.lastName)}

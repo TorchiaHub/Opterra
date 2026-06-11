@@ -1,29 +1,47 @@
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   overflow: hidden;
+  transition: box-shadow 0.2s ease;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.card:hover {
+  box-shadow: 0 1px 6px rgba(10, 22, 40, 0.04);
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--color-border-light);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .title {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-navy-900);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0A1628;
   margin: 0;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .body {
-  padding: var(--space-5);
+  padding: 20px;
 }
 
 .bodyNoPadding {
   padding: 0;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

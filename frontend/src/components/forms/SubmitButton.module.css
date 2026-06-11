@@ -2,65 +2,99 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-5);
+  gap: 8px;
+  padding: 8px 20px;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.15s ease;
   min-height: 36px;
+  position: relative;
+  overflow: hidden;
 }
 
-.primary {
-  background: var(--color-navy-900);
-  color: white;
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background 0.15s ease;
 }
 
-.primary:hover:not(:disabled) {
-  background: var(--color-navy-800);
+.btn:hover::after {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.secondary {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(10, 22, 40, 0.1);
 }
 
-.secondary:hover:not(:disabled) {
-  border-color: var(--color-navy-200);
-}
-
-.accent {
-  background: var(--color-teal-500);
-  color: white;
-}
-
-.accent:hover:not(:disabled) {
-  background: var(--color-teal-600);
-}
-
-.danger {
-  background: var(--color-danger);
-  color: white;
-}
-
-.danger:hover:not(:disabled) {
-  opacity: 0.9;
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.primary {
+  background: #0A1628;
+  color: white;
+}
+
+.primary:hover:not(:disabled) {
+  background: #132240;
+}
+
+.secondary {
+  background: var(--color-surface);
+  color: #1E293B;
+  border: 1px solid var(--color-border);
+}
+
+.secondary::after {
+  background: transparent;
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: #CBD5E1;
+  background: #F4F7FA;
+}
+
+.accent {
+  background: #2DD4A8;
+  color: #0A1628;
+}
+
+.accent:hover:not(:disabled) {
+  background: #25c49a;
+  box-shadow: 0 2px 12px rgba(45, 212, 168, 0.25);
+}
+
+.danger {
+  background: #EF4444;
+  color: white;
+}
+
+.danger:hover:not(:disabled) {
+  background: #DC2626;
 }
 
 .spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinnerIcon {
   animation: spin 0.6s linear infinite;
 }
 

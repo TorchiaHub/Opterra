@@ -1,3 +1,4 @@
+import Icon from '../Icon'
 import styles from './StatusBadge.module.css'
 
 const VARIANT_MAP = {
@@ -12,7 +13,11 @@ const VARIANT_MAP = {
 export function StatusBadge({ label, variant = 'neutral', showDot = true }) {
   return (
     <span className={`${styles.badge} ${VARIANT_MAP[variant] || styles.neutral}`}>
-      {showDot && <span className={styles.dot} />}
+      {showDot && (
+        <span className={styles.dot}>
+          <Icon name="circleDot" size={8} className={styles.dotIcon} />
+        </span>
+      )}
       {label}
     </span>
   )

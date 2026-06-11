@@ -1,67 +1,98 @@
-import { Link } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { APP_ROUTES } from '../../utils/constants'
-import styles from './HomePage.module.css'
+import { Link } from 'react-router-dom';
+import Icon from '../../components/Icon.jsx';
+import styles from './HomePage.module.css';
 
 const features = [
-  { icon: '📋', title: 'Gestione Gare', text: 'Centralizza tutte le gare, RFP e RFQ in un unico workspace condiviso con il tuo team.' },
-  { icon: '✅', title: 'Checklist Intelligenti', text: 'Traccia ogni requisito con checklist collaborative, scadenze e assegnazione automatica.' },
-  { icon: '📄', title: 'Documenti & Versioni', text: 'Carica, organizza e versiona i documenti di gara con drag-and-drop e anteprime.' },
-  { icon: '🤖', title: 'AI Integrata', text: 'Estrai requisiti, analizza compliance, genera summary e bozze con AI specializzata.' },
-  { icon: '💬', title: 'Chatbot Operativo', text: 'Un assistente conversazionale che esegue azioni, crea task e risponde su ogni gara.' },
-  { icon: '🔍', title: 'Scopri Bandi', text: 'Ricevi bandi da fonti pubbliche con scoring automatico di rilevanza e salva con un click.' },
-]
+  { icon: 'search', title: 'AI-Powered Search', description: 'Find the perfect tenders instantly with our intelligent matching engine.' },
+  { icon: 'robot', title: 'Smart Automation', description: 'Automate repetitive tasks and focus on winning more contracts.' },
+  { icon: 'shield', title: 'Secure & Compliant', description: 'Enterprise-grade security with full audit trails and compliance.' },
+  { icon: 'globe', title: 'Global Coverage', description: 'Access tenders from across Europe and beyond in one platform.' },
+  { icon: 'zap', title: 'Real-Time Alerts', description: 'Never miss an opportunity with instant notifications and alerts.' },
+  { icon: 'layers', title: 'Advanced Analytics', description: 'Track performance, insights, and trends with powerful dashboards.' },
+];
 
-export function HomePage() {
-  const { isAuthenticated } = useAuth()
+const LOGO_SIZE = 48;
 
+export default function HomePage() {
   return (
-    <div>
+    <div className={styles.page}>
       <section className={styles.hero}>
+        <div className={styles.heroBackground}>
+          <div className={styles.gridPattern} />
+        </div>
         <div className={styles.heroContent}>
-          <img src="/opterra-logo.png" alt="Opterra" className={styles.heroLogo} />
+          <div className={styles.logoFloat}>
+            <img src="/opterra-logo.png" alt="Opterra" className={styles.logoImg} />
+          </div>
           <h1 className={styles.heroTitle}>
-            Il workspace <span className={styles.heroAccent}>intelligente</span> per chi vince gare
+            <span className={styles.heroBrand}>Opterra</span>
+            <br />
+            <span className={styles.heroSubtitle}>AI-Powered Tender Intelligence</span>
           </h1>
-          <p className={styles.heroText}>
-            TenderFlow unisce gestione documentale, checklist, task e AI in un'unica piattaforma
-            SaaS pensata per aziende che partecipano a bandi e gare d'appalto.
+          <p className={styles.heroDescription}>
+            Discover, track, and win public tenders with the power of artificial intelligence.
+            The modern platform built for procurement professionals.
           </p>
-          <div className={styles.heroActions}>
-            {isAuthenticated ? (
-              <Link to={APP_ROUTES.DASHBOARD} className={styles.btnPrimary}>
-                Vai alla Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link to={APP_ROUTES.REGISTER} className={styles.btnPrimary}>
-                  Inizia gratis
-                </Link>
-                <Link to={APP_ROUTES.LOGIN} className={styles.btnOutline}>
-                  Accedi
-                </Link>
-              </>
-            )}
+          <div className={styles.heroButtons}>
+            <Link to="/register" className={styles.btnPrimary}>
+              Get Started Free
+              <Icon name="arrowRight" size={18} className={styles.btnIcon} />
+            </Link>
+            <Link to="/demo" className={styles.btnSecondary}>
+              Request a Demo
+              <Icon name="calendar" size={18} className={styles.btnIcon} />
+            </Link>
+          </div>
+        </div>
+        <div className={styles.heroScroll}>
+          <div className={styles.scrollIndicator} />
+        </div>
+      </section>
+
+      <section className={styles.features}>
+        <div className={styles.container}>
+          <div className={styles.featuresHeader}>
+            <h2 className={styles.featuresTitle}>Why Choose Opterra?</h2>
+            <p className={styles.featuresSubtitle}>
+              Everything you need to find and win the best public tenders
+            </p>
+          </div>
+          <div className={styles.featuresGrid}>
+            {features.map((f, i) => (
+              <div
+                key={f.title}
+                className={styles.featureCard}
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
+                <span className={styles.featureNumber}>{String(i + 1).padStart(2, '0')}</span>
+                <div className={styles.featureIcon}>
+                  <Icon name={f.icon} size={28} />
+                </div>
+                <h3 className={styles.featureTitle}>{f.title}</h3>
+                <p className={styles.featureDesc}>{f.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Tutto ciò che serve per gestire le gare</h2>
-        <div className={styles.features}>
-          {features.map((f, i) => (
-            <div key={i} className={styles.featureCard}>
-              <div className={styles.featureIcon}>{f.icon}</div>
-              <h3 className={styles.featureTitle}>{f.title}</h3>
-              <p className={styles.featureText}>{f.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       <footer className={styles.footer}>
-        © {new Date().getFullYear()} Opterra — TenderFlow. Tutti i diritti riservati.
+        <div className={styles.container}>
+          <div className={styles.footerContent}>
+            <div className={styles.footerBrand}>
+              <img src="/opterra-logo.png" alt="Opterra" className={styles.footerLogo} />
+              <span className={styles.footerBrandName}>Opterra</span>
+            </div>
+            <div className={styles.footerLinks}>
+              <Link to="/features">Features</Link>
+              <Link to="/pricing">Pricing</Link>
+              <Link to="/demo">Demo</Link>
+              <Link to="/login">Login</Link>
+            </div>
+            <p className={styles.footerCopy}>2026 Opterra. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
-  )
+  );
 }

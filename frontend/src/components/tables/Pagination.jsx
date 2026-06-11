@@ -1,3 +1,4 @@
+import Icon from '../Icon'
 import styles from './Pagination.module.css'
 
 export function Pagination({ page = 1, totalPages = 1, total, onPageChange }) {
@@ -22,7 +23,7 @@ export function Pagination({ page = 1, totalPages = 1, total, onPageChange }) {
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
           >
-            ‹
+            <Icon name="arrowLeft" size={16} />
           </button>
           {pages.map(p => (
             <button
@@ -38,7 +39,7 @@ export function Pagination({ page = 1, totalPages = 1, total, onPageChange }) {
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
           >
-            ›
+            <Icon name="arrowRight" size={16} />
           </button>
         </div>
       )}

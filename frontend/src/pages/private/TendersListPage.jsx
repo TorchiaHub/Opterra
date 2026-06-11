@@ -5,8 +5,9 @@ import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
 import { FilterBar } from '../../components/tables/FilterBar'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
-import { SubmitButton } from '../../components/forms/SubmitButton'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { SubmitButton } from '../../components/forms/SubmitButton'
+import Icon from '../../components/Icon'
 import {
   APP_ROUTES, TENDER_STATUS, TENDER_STATUS_LABELS,
   TENDER_STATUS_COLORS, TENDER_TYPE_LABELS,
@@ -21,6 +22,9 @@ const mockTenders = [
   { id: 3, title: 'Manutenzione impianti sportivi', issuer: 'ASL Roma', type: 'tender', status: 'draft', deadlineAt: '2026-08-01T10:00:00Z', valueAmount: 200000 },
   { id: 4, title: 'Fornitura arredi ufficio', issuer: 'Comune di Torino', type: 'bando', status: 'won', deadlineAt: '2026-05-15T10:00:00Z', valueAmount: 45000 },
   { id: 5, title: 'Servizi di pulizia e sanificazione', issuer: 'Provincia di Milano', type: 'tender', status: 'lost', deadlineAt: '2026-04-30T10:00:00Z', valueAmount: 60000 },
+  { id: 6, title: 'Fornitura hardware rete', issuer: 'Comune di Bologna', type: 'rfq', status: 'active', deadlineAt: '2026-07-20T10:00:00Z', valueAmount: 95000 },
+  { id: 7, title: 'Consulenza cybersecurity', issuer: 'INPS', type: 'rfp', status: 'submitted', deadlineAt: '2026-06-15T10:00:00Z', valueAmount: 320000 },
+  { id: 8, title: 'Manutenzione ascensori', issuer: 'Regione Piemonte', type: 'bando', status: 'cancelled', deadlineAt: '2026-06-10T10:00:00Z', valueAmount: 15000 },
 ]
 
 export function TendersListPage() {
@@ -28,27 +32,101 @@ export function TendersListPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [sortKey, setSortKey] = useState(null)
+  const [sortDir, setSortDir] = useState('asc')
 
-  const filtered = mockTenders.filter(t => {
+  let filtered = mockTenders.filter(t => {
     if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !t.issuer.toLowerCase().includes(search.toLowerCase())) return false
     if (statusFilter && t.status !== statusFilter) return false
     if (typeFilter && t.type !== typeFilter) return false
     return true
   })
 
+  if (sortKey) {
+    filtered = [...filtered].sort((a, b) => {
+      const aVal = a[sortKey]
+      const bVal = b[sortKey]
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1
+      return 0
+    })
+  }
+
+  function handleSort(key) {
+    if (sortKey === key) {
+      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
   const columns = [
-    { label: 'Gara', key: 'title', render: row => <strong>{row.title}</strong>, width: '30%' },
-    { label: 'Ente', key: 'issuer' },
-    { label: 'Tipo', render: row => TENDER_TYPE_LABELS[row.type] || row.type },
-    { label: 'Stato', render: row => <StatusBadge label={TENDER_STATUS_LABELS[row.status]} variant={TENDER_STATUS_COLORS[row.status]} /> },
-    { label: 'Scadenza', render: row => formatDate(row.deadlineAt) },
-    { label: 'Valore', render: row => formatCurrency(row.valueAmount), width: '120px' },
+    {
+      label: 'Gara',
+      key: 'title',
+      sortable: true,
+      onSort: () => handleSort('title'),
+      render: row => <strong className={styles.rowTitle}>{row.title}</strong>,
+      width: '30%',
+    },
+    {
+      label: 'Ente',
+      key: 'issuer',
+      sortable: true,
+      onSort: () => handleSort('issuer'),
+      render: row => <span className={styles.rowMeta}>{row.issuer}</span>,
+    },
+    {
+      label: 'Tipo',
+      key: 'type',
+      sortable: true,
+      onSort: () => handleSort('type'),
+      render: row => (
+        <span className={styles.typeTag}>
+          <Icon name="tag" size={12} />
+          {TENDER_TYPE_LABELS[row.type] || row.type}
+        </span>
+      ),
+    },
+    {
+      label: 'Stato',
+      key: 'status',
+      render: row => (
+        <StatusBadge
+          label={TENDER_STATUS_LABELS[row.status]}
+          variant={TENDER_STATUS_COLORS[row.status]}
+        />
+      ),
+    },
+    {
+      label: 'Scadenza',
+      key: 'deadlineAt',
+      sortable: true,
+      onSort: () => handleSort('deadlineAt'),
+      render: row => (
+        <span className={styles.rowDate}>
+          <Icon name="calendar" size={12} />
+          {formatDate(row.deadlineAt)}
+        </span>
+      ),
+    },
+    {
+      label: 'Valore',
+      key: 'valueAmount',
+      sortable: true,
+      onSort: () => handleSort('valueAmount'),
+      render: row => <span className={styles.rowValue}>{formatCurrency(row.valueAmount)}</span>,
+      width: '120px',
+    },
   ]
 
   function handleClearFilters() {
     setSearch('')
     setStatusFilter('')
     setTypeFilter('')
+    setSortKey(null)
+    setSortDir('asc')
   }
 
   return (
@@ -61,8 +139,9 @@ export function TendersListPage() {
         title="Gare"
         subtitle="Gestisci le gare del tuo team"
         actions={
-          <SubmitButton variant="primary" onClick={() => {}}>
-            + Nuova gara
+          <SubmitButton variant="primary" onClick={() => {}} className={styles.newBtn}>
+            <Icon name="plus" size={16} />
+            <span>Nuova Gara</span>
           </SubmitButton>
         }
       />
@@ -94,7 +173,7 @@ export function TendersListPage() {
         onRowClick={row => navigate(`/app/tenders/${row.id}`)}
         emptyState={
           <EmptyState
-            icon="📋"
+            icon="inbox"
             title="Nessuna gara trovata"
             message="Prova a modificare i filtri o crea una nuova gara."
           />

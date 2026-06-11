@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import Icon from '../Icon'
 import styles from './FileDropzone.module.css'
 
 export function FileDropzone({ onFileSelect, accept, multiple = false }) {
@@ -42,7 +43,9 @@ export function FileDropzone({ onFileSelect, accept, multiple = false }) {
       onDrop={handleDrop}
       onClick={handleClick}
     >
-      <div className={styles.icon}>📄</div>
+      <div className={styles.icon}>
+        <Icon name="upload" size={40} />
+      </div>
       <div className={styles.title}>Trascina file qui o clicca per caricare</div>
       <div className={styles.subtitle}>PDF, DOC, XLS, ZIP — Max 20MB</div>
       <input

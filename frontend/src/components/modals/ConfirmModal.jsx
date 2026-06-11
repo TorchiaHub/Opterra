@@ -1,3 +1,4 @@
+import Icon from '../Icon'
 import styles from './ConfirmModal.module.css'
 
 export function ConfirmModal({
@@ -6,7 +7,7 @@ export function ConfirmModal({
   message = 'Sei sicuro di voler procedere?',
   confirmLabel = 'Conferma',
   cancelLabel = 'Annulla',
-  icon = '⚠️',
+  icon = 'alert',
   onConfirm,
   onCancel,
   danger = true,
@@ -16,13 +17,18 @@ export function ConfirmModal({
   return (
     <div className={styles.backdrop} onClick={onCancel}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <div className={styles.icon}>{icon}</div>
+        <div className={styles.icon}>
+          <Icon name={icon} size={48} />
+        </div>
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.message}>{message}</p>
         <div className={styles.actions}>
-          <button className={styles.btnCancel} onClick={onCancel}>{cancelLabel}</button>
-          <button className={styles.btnConfirm} onClick={onConfirm}
-            style={!danger ? { background: 'var(--color-teal-500)' } : {}}
+          <button className={styles.btnCancel} onClick={onCancel}>
+            {cancelLabel}
+          </button>
+          <button 
+            className={`${styles.btnConfirm} ${danger ? styles.btnDanger : styles.btnPrimary}`} 
+            onClick={onConfirm}
           >
             {confirmLabel}
           </button>

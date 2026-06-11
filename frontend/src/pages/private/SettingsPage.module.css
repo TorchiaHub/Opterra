@@ -1,0 +1,308 @@
+.page {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-6);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  height: fit-content;
+  position: sticky;
+  top: var(--space-4);
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.sidebarItem:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.sidebarItemActive {
+  background: var(--color-teal-50);
+  color: var(--color-teal-600);
+  font-weight: var(--font-semibold);
+}
+
+.sidebarChevron {
+  margin-left: auto;
+  color: var(--color-teal-500);
+  animation: slideInRight 0.2s ease-out;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.saveActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.savedIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-success);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4) var(--space-5);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: all var(--transition-fast);
+  color: var(--color-text-tertiary);
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--color-teal-400);
+  box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
+  transform: translateY(-1px);
+  color: var(--color-teal-500);
+}
+
+.input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  min-width: 0;
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.notificationsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.notificationsSection:last-child {
+  border-bottom: none;
+}
+
+.notificationsSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.toggleList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.toggleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.toggleItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.toggleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggleLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+.toggleDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.toggleSwitch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.toggleSwitch:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.toggleOn {
+  background: var(--color-teal-500);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(20px);
+}
+
+.securitySection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.securityItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  animation: slideIn 0.3s ease-out both;
+}
+
+.securityItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.securityInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.securityLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+.securityDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.securityStatus {
+  flex-shrink: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: var(--space-2);
+  }
+  .sidebarItem {
+    white-space: nowrap;
+    padding: var(--space-2) var(--space-3);
+  }
+  .sidebarItem span {
+    display: none;
+  }
+  .sidebarChevron {
+    display: none;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
