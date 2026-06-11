@@ -1,0 +1,169 @@
+openapi: 3.1.0
+info:
+  title: TenderFlow API
+  description: API B2B SaaS per gestione gare, RFP e procurement
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Development
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: object
+
+    RegisterPayload:
+      type: object
+      required: [name, slug, email, password, firstName, lastName]
+      properties:
+        name:
+          type: string
+          description: Nome azienda
+        slug:
+          type: string
+          description: Slug univoco tenant
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        firstName:
+          type: string
+        lastName:
+          type: string
+        vatNumber:
+          type: string
+        industry:
+          type: string
+        country:
+          type: string
+          default: IT
+
+    LoginPayload:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    RefreshPayload:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Registra azienda + crea tenant + manager
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPayload'
+      responses:
+        '201':
+          description: Registrazione completata
+        '422':
+          description: Errore validazione
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login → access + refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginPayload'
+      responses:
+        '200':
+          description: Login effettuato
+        '401':
+          description: Credenziali non valide
+
+  /api/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rinnova access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshPayload'
+      responses:
+        '200':
+          description: Token rinnovato
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoca refresh token
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshPayload'
+      responses:
+        '200':
+          description: Logout effettuato
+
+  /api/me/tenant:
+    get:
+      tags: [Tenant]
+      summary: Profilo tenant corrente
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dati tenant
+
+  /api/health:
+    get:
+      tags: [System]
+      summary: Health check
+      responses:
+        '200':
+          description: Server attivo
