@@ -22,13 +22,25 @@ import auditRoutes from './modules/audit/audit.routes.js'
 import aiRoutes from './modules/ai/ai.routes.js'
 import chatbotRoutes from './modules/chatbot/chatbot.routes.js'
 import scrapingRoutes from './modules/scraping/scraping.routes.js'
+import adminRoutes from './modules/admin/admin.routes.js'
+import { generalLimiter, authLimiter, aiLimiter } from './middleware/rateLimiter.middleware.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const app = express()
 
+const CORS_ORIGINS = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
+  : ['http://localhost:5173', 'http://localhost:3000']
+
 app.use(helmet())
-app.use(cors())
+app.use(cors({
+  origin: CORS_ORIGINS,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400,
+}))
 app.use(express.json({ limit: '10mb' }))
 app.use(morgan('short'))
 
@@ -44,7 +56,8 @@ if (swaggerDoc) {
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 }
 
-app.use('/api/auth', authRoutes)
+app.use(generalLimiter)
+app.use('/api/auth', authLimiter, authRoutes)
 app.use('/api/me/tenant', tenantsRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/tenders', tendersRoutes)
@@ -52,12 +65,33 @@ app.use('/api/tenders', requirementsRoutes)
 app.use('/api/tenders', documentsRoutes)
 app.use('/api/tenders', tasksRoutes)
 app.use('/api/audit', auditRoutes)
-app.use('/api/ai', aiRoutes)
+app.use('/api/ai', aiLimiter, aiRoutes)
+app.use('/api/admin', adminRoutes)
 app.use('/api/chat', chatbotRoutes)
 app.use('/api/scraping', scrapingRoutes)
 
-app.get('/api/health', (_req, res) => {
-  res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } })
+app.get('/api/health', async (_req, res) => {
+  const checks = { database: false, storage: false }
+
+  try {
+    const pool = (await import('./config/db.js')).default
+    await pool.query('SELECT 1')
+    checks.database = true
+  } catch { /* fail */ }
+
+  try {
+    const fs = await import('fs')
+    const storagePath = env.storage.path
+    if (fs.existsSync(storagePath)) {
+      checks.storage = true
+    }
+  } catch { /* fail */ }
+
+  const allOk = checks.database && checks.storage
+  res.status(allOk ? 200 : 503).json({
+    success: allOk,
+    data: { status: allOk ? 'ok' : 'degraded', checks, timestamp: new Date().toISOString() },
+  })
 })
 
 app.use(errorHandler)

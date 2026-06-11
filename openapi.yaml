@@ -1174,6 +1174,237 @@ paths:
         '200':
           description: Gara creata
 
+  /api/admin/tenants:
+    get:
+      tags: [Admin]
+      summary: Lista tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer }
+        - name: pageSize
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lista tenant
+
+  /api/admin/tenants/{id}:
+    get:
+      tags: [Admin]
+      summary: Dettaglio tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Dettaglio tenant
+    patch:
+      tags: [Admin]
+      summary: Modifica profilo tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Tenant aggiornato
+
+  /api/admin/tenants/{id}/status:
+    patch:
+      tags: [Admin]
+      summary: Blocca/sblocca/sospendi tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, blocked, suspended]
+                blockedReason:
+                  type: string
+      responses:
+        '200':
+          description: Stato aggiornato
+
+  /api/admin/tenants/{id}/plan:
+    patch:
+      tags: [Admin]
+      summary: Cambia piano tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planCode:
+                  type: string
+      responses:
+        '200':
+          description: Piano cambiato
+
+  /api/admin/tenants/{id}/usage:
+    get:
+      tags: [Admin]
+      summary: Utilizzo corrente tenant vs limiti
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Utilizzo tenant
+
+  /api/admin/users:
+    get:
+      tags: [Admin]
+      summary: Lista globale utenti
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: role
+          in: query
+          schema: { type: string }
+        - name: tenantId
+          in: query
+          schema: { type: integer }
+        - name: page
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lista utenti
+
+  /api/admin/users/{id}/role:
+    patch:
+      tags: [Admin]
+      summary: Cambia ruolo utente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roleCode:
+                  type: string
+                  enum: [superadmin, manager, user]
+      responses:
+        '200':
+          description: Ruolo aggiornato
+
+  /api/admin/plans:
+    get:
+      tags: [Admin]
+      summary: Lista piani
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista piani
+    post:
+      tags: [Admin]
+      summary: Crea nuovo piano
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string }
+                name: { type: string }
+                maxUsers: { type: integer }
+                maxTenders: { type: integer }
+                maxStorageMb: { type: integer }
+                maxAiRequestsMonth: { type: integer }
+      responses:
+        '201':
+          description: Piano creato
+
+  /api/admin/plans/{id}:
+    patch:
+      tags: [Admin]
+      summary: Modifica piano
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Piano aggiornato
+
+  /api/admin/audit:
+    get:
+      tags: [Admin]
+      summary: Log audit globali cross-tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          schema: { type: integer }
+        - name: action
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Log audit globali
+
   /api/health:
     get:
       tags: [System]

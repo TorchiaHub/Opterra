@@ -121,6 +121,11 @@ async function refresh(refreshTokenValue) {
   const storedToken = await queries.findRefreshToken(tokenHash)
 
   if (!storedToken) {
+    const maybeRevoked = await queries.findRevokedRefreshToken(tokenHash)
+    if (maybeRevoked) {
+      await queries.revokeAllUserTokens(maybeRevoked.user_id)
+      logger.warn('Refresh token reuse detected — all tokens revoked for user', { userId: maybeRevoked.user_id })
+    }
     throw Object.assign(new Error('Refresh token non valido o scaduto.'), {
       statusCode: 401,
       code: 'UNAUTHORIZED',
