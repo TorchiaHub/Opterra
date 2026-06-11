@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../../components/Icon.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
+import { APP_ROUTES } from '../../utils/constants.js';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from?.pathname || APP_ROUTES.DASHBOARD;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

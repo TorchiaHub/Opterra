@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../../components/Icon.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
+import { APP_ROUTES } from '../../utils/constants.js';
 import styles from './RegisterPage.module.css';
 
 export default function RegisterPage() {
@@ -57,7 +58,7 @@ export default function RegisterPage() {
         country: 'IT',
       });
 
-      navigate('/dashboard', { replace: true });
+      navigate(APP_ROUTES.DASHBOARD, { replace: true });
     } catch (err) {
       const msg = err.response?.data?.error?.message || 'Registration failed';
       setError(msg);
