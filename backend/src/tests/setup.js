@@ -9,30 +9,32 @@ let testPool = null
 export async function getTestPool() {
   if (testPool) return testPool
 
-  const rootConn = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT, 10) || 3306,
-    user: process.env.DB_USER || 'tenderflow_user',
-    password: process.env.DB_PASSWORD || 'tenderflow_pass',
-  })
-
-  await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${TEST_DB}\``)
-  await rootConn.end()
-
   testPool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     database: TEST_DB,
-    user: process.env.DB_USER || 'tenderflow_user',
-    password: process.env.DB_PASSWORD || 'tenderflow_pass',
+    user: process.env.DB_ROOT_USER || 'root',
+    password: process.env.DB_ROOT_PASSWORD || 'password',
     waitForConnections: true,
     connectionLimit: 5,
+    multipleStatements: true,
   })
 
   return testPool
 }
 
 export async function setupTestDatabase() {
+  const rootConn = await mysql.createConnection({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT, 10) || 3306,
+    user: process.env.DB_ROOT_USER || 'root',
+    password: process.env.DB_ROOT_PASSWORD || 'password',
+  })
+
+  await rootConn.query(`DROP DATABASE IF EXISTS \`${TEST_DB}\``)
+  await rootConn.query(`CREATE DATABASE \`${TEST_DB}\``)
+  await rootConn.end()
+
   const pool = await getTestPool()
 
   const migrationsDir = path.resolve('migrations')
@@ -54,10 +56,18 @@ export async function setupTestDatabase() {
 
 export async function teardownTestDatabase() {
   if (testPool) {
-    await testPool.query(`DROP DATABASE IF EXISTS \`${TEST_DB}\``)
     await testPool.end()
     testPool = null
   }
+
+  const rootConn = await mysql.createConnection({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT, 10) || 3306,
+    user: process.env.DB_ROOT_USER || 'root',
+    password: process.env.DB_ROOT_PASSWORD || 'password',
+  })
+  await rootConn.query(`DROP DATABASE IF EXISTS \`${TEST_DB}\``)
+  await rootConn.end()
 }
 
 beforeAll(async () => {

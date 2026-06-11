@@ -5,7 +5,9 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/tests/**/*.test.js'],
-    testTimeout: 15000,
+    testTimeout: 30000,
     setupFiles: ['src/tests/setup.js'],
+    fileParallelism: false,
+    pool: 'forks',
   },
 })

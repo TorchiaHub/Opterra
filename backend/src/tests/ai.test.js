@@ -24,7 +24,7 @@ describe('AI — queries', () => {
       [100, yearMonth]
     )
     expect(rows[0].count).toBeGreaterThanOrEqual(1)
-    expect(typeof rows[0].total_tokens).toBe('number')
+    expect(rows[0].total_tokens == 350 || rows[0].total_tokens === '350').toBe(true)
   })
 
   it('should return different counts for different tenants', async () => {

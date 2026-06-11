@@ -13,7 +13,7 @@ ON DUPLICATE KEY UPDATE `tenant_id` = `tenant_id`;
 
 -- Manager demo (password: password123)
 INSERT INTO `users` (`id`, `tenant_id`, `email`, `password_hash`, `first_name`, `last_name`, `status`)
-VALUES (100, 100, 'marco@demo.it', '$2b$12$LJ3m4ys3Lk0TSwHnbfOMT.yjYPCFJqPNiRRfMjnZFCQHSUxMjKqVe', 'Marco', 'Bianchi', 'active')
+VALUES (100, 100, 'marco@demo.it', '$2b$12$5sK5uW.iWNAK84Y7lwA44O1tpE.Y9AWTHkPaCn/.ezs3FyvhPkcH6', 'Marco', 'Bianchi', 'active')
 ON DUPLICATE KEY UPDATE `email` = VALUES(`email`);
 
 INSERT INTO `user_roles` (`user_id`, `role_id`, `tenant_id`)
@@ -22,7 +22,7 @@ ON DUPLICATE KEY UPDATE `user_id` = `user_id`;
 
 -- User operativo demo
 INSERT INTO `users` (`id`, `tenant_id`, `email`, `password_hash`, `first_name`, `last_name`, `status`)
-VALUES (101, 100, 'lisa@demo.it', '$2b$12$LJ3m4ys3Lk0TSwHnbfOMT.yjYPCFJqPNiRRfMjnZFCQHSUxMjKqVe', 'Lisa', 'Rossi', 'active')
+VALUES (101, 100, 'lisa@demo.it', '$2b$12$5sK5uW.iWNAK84Y7lwA44O1tpE.Y9AWTHkPaCn/.ezs3FyvhPkcH6', 'Lisa', 'Rossi', 'active')
 ON DUPLICATE KEY UPDATE `email` = VALUES(`email`);
 
 INSERT INTO `user_roles` (`user_id`, `role_id`, `tenant_id`)
