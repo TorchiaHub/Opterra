@@ -295,7 +295,7 @@ export function TenderDetailPage() {
             {['todo', 'in_progress', 'done'].map(status => (
               <div key={status} className={styles.kanbanColumn}>
                 <div className={styles.kanbanHeader}>
-                    <StatusBadge label={TASK_STATUS_LABELS[status]} variant={status === 'done' ? 'success' : status === 'in_progress' ? 'info' : 'neutral'} />
+                  <StatusBadge label={TASK_STATUS_LABELS[status]} variant={status === 'done' ? 'success' : status === 'in_progress' ? 'info' : 'neutral'} />
                   <span className={styles.kanbanCount}>
                     {mockTasks.filter(t => t.status === status).length}
                   </span>

@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { KpiCard } from '../../components/cards/KpiCard'
 import { SectionCard } from '../../components/cards/SectionCard'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
-import { Loader } from '../../components/feedback/Loader'
 import { EmptyState } from '../../components/feedback/EmptyState'
 import Icon from '../../components/Icon'
 import { APP_ROUTES, TENDER_STATUS_LABELS, TENDER_STATUS_COLORS } from '../../utils/constants'
@@ -57,9 +55,6 @@ const taskStatusConfig = {
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
-
-  if (loading) return <Loader label="Caricamento dashboard..." />
 
   return (
     <div className={styles.page}>
@@ -87,60 +82,68 @@ export function DashboardPage() {
 
       <div className={styles.grid}>
         <SectionCard title="Gare in scadenza" noPadding>
-          <div className={styles.list}>
-            {recentTenders.map((tender, index) => (
-              <div
-                key={tender.id}
-                className={styles.listItem}
-                style={{ animationDelay: `${index * 0.05}s` }}
-                onClick={() => navigate(`/app/tenders/${tender.id}`)}
-              >
-                <div className={styles.listInfo}>
-                  <span className={styles.listTitle}>{tender.title}</span>
-                  <span className={styles.listMeta}>{tender.issuer}</span>
-                </div>
-                <div className={styles.listRight}>
-                  <StatusBadge
-                    label={TENDER_STATUS_LABELS[tender.status]}
-                    variant={TENDER_STATUS_COLORS[tender.status]}
-                  />
-                  <div className={styles.listValue}>{formatCurrency(tender.valueAmount)}</div>
-                  <div className={styles.listDate}>
-                    <Icon name="calendar" size={12} />
-                    {formatRelative(tender.deadlineAt)}
+          {recentTenders.length === 0 ? (
+            <EmptyState icon="inbox" title="Nessuna gara" message="Le gare in scadenza appariranno qui." />
+          ) : (
+            <div className={styles.list}>
+              {recentTenders.map((tender, index) => (
+                <div
+                  key={tender.id}
+                  className={styles.listItem}
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                  onClick={() => navigate(`/app/tenders/${tender.id}`)}
+                >
+                  <div className={styles.listInfo}>
+                    <span className={styles.listTitle}>{tender.title}</span>
+                    <span className={styles.listMeta}>{tender.issuer}</span>
+                  </div>
+                  <div className={styles.listRight}>
+                    <StatusBadge
+                      label={TENDER_STATUS_LABELS[tender.status]}
+                      variant={TENDER_STATUS_COLORS[tender.status]}
+                    />
+                    <div className={styles.listValue}>{formatCurrency(tender.valueAmount)}</div>
+                    <div className={styles.listDate}>
+                      <Icon name="calendar" size={12} />
+                      {formatRelative(tender.deadlineAt)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </SectionCard>
 
         <SectionCard title="Attivita recenti" noPadding>
-          <div className={styles.list}>
-            {recentActivities.map((activity, index) => (
-              <div key={activity.id} className={styles.activityItem} style={{ animationDelay: `${index * 0.05}s` }}>
-                <div className={styles.activityIcon}>
-                  <Icon name={activity.icon} size={16} />
+          {recentActivities.length === 0 ? (
+            <EmptyState icon="activity" title="Nessuna attivita" message="Le attivita recenti appariranno qui." />
+          ) : (
+            <div className={styles.list}>
+              {recentActivities.map((activity, index) => (
+                <div key={activity.id} className={styles.activityItem} style={{ animationDelay: `${index * 0.05}s` }}>
+                  <div className={styles.activityIcon}>
+                    <Icon name={activity.icon} size={16} />
+                  </div>
+                  <div className={styles.activityInfo}>
+                    <span className={styles.activityText}>
+                      <strong>{activity.user}</strong> {activity.action} <strong>{activity.target}</strong>
+                    </span>
+                    <span className={styles.activityTime}>{formatRelative(activity.time)}</span>
+                  </div>
                 </div>
-                <div className={styles.activityInfo}>
-                  <span className={styles.activityText}>
-                    <strong>{activity.user}</strong> {activity.action} <strong>{activity.target}</strong>
-                  </span>
-                  <span className={styles.activityTime}>{formatRelative(activity.time)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </SectionCard>
       </div>
 
       <div className={styles.tasksSection}>
         <SectionCard title="Task Prioritari" noPadding>
-          <div className={styles.list}>
-            {tasks.length === 0 ? (
-              <EmptyState icon="inbox" title="Nessun task" message="Tutti i task sono completati." />
-            ) : (
-              tasks.map((task, index) => (
+          {tasks.length === 0 ? (
+            <EmptyState icon="inbox" title="Nessun task" message="Tutti i task sono completati." />
+          ) : (
+            <div className={styles.list}>
+              {tasks.map((task, index) => (
                 <div key={task.id} className={styles.taskItem} style={{ animationDelay: `${index * 0.05}s` }}>
                   <div className={styles.taskLeft}>
                     <div className={styles.taskCheckbox}>
@@ -165,9 +168,9 @@ export function DashboardPage() {
                     </div>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </SectionCard>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { DataTable } from '../../components/tables/DataTable'
 import { SectionCard } from '../../components/cards/SectionCard'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
 import styles from './SubscriptionsPage.module.css'
@@ -73,11 +74,12 @@ export function SubscriptionsPage() {
     )},
     { label: 'Azioni', render: row => (
       <div className={styles.actionsCell}>
-        <button className={styles.actionBtn} title="Modifica piano">
+        <button className={styles.actionBtn} type="button" title="Modifica piano">
           <Icon name="edit" size={16} />
         </button>
         <button
           className={`${styles.toggleBtn} ${row.status === 'active' ? styles.toggleActive : styles.toggleDisabled}`}
+          type="button"
           onClick={() => toggleStatus(row.id)}
           title={row.status === 'active' ? 'Disabilita' : 'Attiva'}
         >
@@ -98,10 +100,10 @@ export function SubscriptionsPage() {
         title="Subscription"
         subtitle="Gestione dei piani e dei prezzi"
         actions={
-          <button className={styles.primaryBtn}>
+          <SubmitButton variant="primary" onClick={() => {}}>
             <Icon name="plus" size={16} />
             <span>Nuovo Piano</span>
-          </button>
+          </SubmitButton>
         }
       />
 

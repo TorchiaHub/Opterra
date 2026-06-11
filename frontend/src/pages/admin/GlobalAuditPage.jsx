@@ -5,6 +5,7 @@ import { DataTable } from '../../components/tables/DataTable'
 import { FilterBar } from '../../components/tables/FilterBar'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
 import { formatDateTime } from '../../utils/date'
@@ -48,7 +49,7 @@ export function GlobalAuditPage() {
   const [typeFilter, setTypeFilter] = useState('')
   const [loading] = useState(false)
 
-  const tenants = [...new Set(audit.map(a => a.tenant).filter(Boolean))]
+  const tenants = [...new Set(audit.map(a => a.tenant).filter(t => t !== '—'))]
 
   const filtered = audit.filter(a => {
     const matchSearch =
@@ -60,28 +61,11 @@ export function GlobalAuditPage() {
     return matchSearch && matchTenant && matchType
   })
 
-  const filters = [
-    {
-      placeholder: 'Tenant',
-      value: tenantFilter,
-      options: tenants.map(t => ({ label: t, value: t })),
-      onChange: setTenantFilter,
-    },
-    {
-      placeholder: 'Tipo azione',
-      value: typeFilter,
-      options: [
-        { label: 'Creazione', value: 'create' },
-        { label: 'Modifica', value: 'update' },
-        { label: 'Eliminazione', value: 'delete' },
-        { label: 'Sistema', value: 'system' },
-        { label: 'Invio', value: 'submit' },
-        { label: 'Autenticazione', value: 'auth' },
-        { label: 'Esportazione', value: 'export' },
-      ],
-      onChange: setTypeFilter,
-    },
-  ]
+  function handleClearFilters() {
+    setSearch('')
+    setTenantFilter('')
+    setTypeFilter('')
+  }
 
   const columns = [
     { label: 'Azione', render: row => (
@@ -140,10 +124,10 @@ export function GlobalAuditPage() {
         title="Global Audit"
         subtitle="Log di tutte le azioni sulla piattaforma"
         actions={
-          <button className={styles.actionBtn}>
+          <SubmitButton variant="secondary" onClick={() => {}}>
             <Icon name="download" size={16} />
             <span>Esporta</span>
-          </button>
+          </SubmitButton>
         }
       />
 
@@ -151,9 +135,30 @@ export function GlobalAuditPage() {
         <FilterBar
           searchValue={search}
           onSearchChange={setSearch}
-          filters={filters}
-          onClear={() => { setSearch(''); setTenantFilter(''); setTypeFilter('') }}
+          onClear={handleClearFilters}
           searchPlaceholder="Cerca azione, utente o target..."
+          filters={[
+            {
+              placeholder: 'Tenant',
+              value: tenantFilter,
+              onChange: setTenantFilter,
+              options: tenants.map(t => ({ label: t, value: t })),
+            },
+            {
+              placeholder: 'Tipo azione',
+              value: typeFilter,
+              onChange: setTypeFilter,
+              options: [
+                { label: 'Creazione', value: 'create' },
+                { label: 'Modifica', value: 'update' },
+                { label: 'Eliminazione', value: 'delete' },
+                { label: 'Sistema', value: 'system' },
+                { label: 'Invio', value: 'submit' },
+                { label: 'Autenticazione', value: 'auth' },
+                { label: 'Esportazione', value: 'export' },
+              ],
+            },
+          ]}
         />
       </div>
 

@@ -79,10 +79,7 @@ export function Sidebar() {
     <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''} ${mobileOpen ? styles.open : ''}`}>
       <div className={styles.brand}>
         <img src="/opterra-logo.png" alt="Opterra" className={styles.logo} />
-        <div>
-          <span className={styles.brandName}>TenderFlow</span>
-          <div className={styles.brandTag}>by Opterra</div>
-        </div>
+        <span className={styles.brandName}>Opterra</span>
       </div>
 
       <nav className={styles.nav}>

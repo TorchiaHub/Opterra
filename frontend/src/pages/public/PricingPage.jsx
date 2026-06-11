@@ -64,6 +64,7 @@ export default function PricingPage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
+        <div className={styles.gridPattern} />
         <div className={styles.container}>
           <h1 className={styles.heroTitle}>Simple, transparent pricing</h1>
           <p className={styles.heroSubtitle}>
@@ -93,7 +94,7 @@ export default function PricingPage() {
                 <div className={styles.planPrice}>
                   <span className={styles.currency}>EUR</span>
                   <span className={styles.amount}>{plan.price}</span>
-                  <span className={styles.period}>{plan.period}</span>
+                  <span className={styles.period}>/{plan.period}</span>
                 </div>
                 <p className={styles.planDescription}>{plan.description}</p>
                 <ul className={styles.planFeatures}>

@@ -1,59 +1,40 @@
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   overflow: hidden;
-  transition: all var(--transition-fast);
+  transition: box-shadow 0.2s ease;
   animation: fadeInUp 0.3s ease-out;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-sm);
-  border-color: var(--color-navy-200);
+  box-shadow: 0 1px 6px rgba(10, 22, 40, 0.04);
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--color-border-light);
-  transition: all var(--transition-fast);
-}
-
-.card:hover .header {
-  border-color: var(--color-navy-200);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .title {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-navy-900);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0A1628;
   margin: 0;
-  transition: color var(--transition-fast);
-}
-
-.card:hover .title {
-  color: var(--color-teal-600);
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-}
-
-.actions > * {
-  transition: all var(--transition-fast);
-}
-
-.actions > *:hover {
-  transform: translateY(-1px);
+  gap: 8px;
 }
 
 .body {
-  padding: var(--space-5);
-  transition: all var(--transition-fast);
+  padding: 20px;
 }
 
 .bodyNoPadding {

@@ -11,17 +11,21 @@ const features = [
   { icon: 'layers', title: 'Advanced Analytics', description: 'Track performance, insights, and trends with powerful dashboards.' },
 ];
 
+const LOGO_SIZE = 48;
+
 export default function HomePage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
-        <div className={styles.heroBackground} />
+        <div className={styles.heroBackground}>
+          <div className={styles.gridPattern} />
+        </div>
         <div className={styles.heroContent}>
           <div className={styles.logoFloat}>
-            <Icon name="sparkles" size={64} className={styles.logoIcon} />
+            <img src="/opterra-logo.png" alt="Opterra" className={styles.logoImg} />
           </div>
           <h1 className={styles.heroTitle}>
-            <span className={styles.gradientText}>Opterra</span>
+            <span className={styles.heroBrand}>Opterra</span>
             <br />
             <span className={styles.heroSubtitle}>AI-Powered Tender Intelligence</span>
           </h1>
@@ -60,6 +64,7 @@ export default function HomePage() {
                 className={styles.featureCard}
                 style={{ animationDelay: `${i * 0.1}s` }}
               >
+                <span className={styles.featureNumber}>{String(i + 1).padStart(2, '0')}</span>
                 <div className={styles.featureIcon}>
                   <Icon name={f.icon} size={28} />
                 </div>
@@ -75,7 +80,7 @@ export default function HomePage() {
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerBrand}>
-              <Icon name="sparkles" size={24} className={styles.footerLogo} />
+              <img src="/opterra-logo.png" alt="Opterra" className={styles.footerLogo} />
               <span className={styles.footerBrandName}>Opterra</span>
             </div>
             <div className={styles.footerLinks}>

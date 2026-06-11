@@ -108,7 +108,7 @@
 
 .inputWrapper:focus-within {
   border-color: var(--color-teal-400);
-  box-shadow: 0 0 0 3px rgba(106, 188, 147, 0.12);
+  box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
   transform: translateY(-1px);
   color: var(--color-teal-500);
 }
@@ -150,7 +150,7 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  color: var(--color-navy-900);
+  color: var(--color-text-primary);
   margin: 0;
 }
 

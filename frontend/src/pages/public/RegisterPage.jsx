@@ -16,6 +16,7 @@ export default function RegisterPage() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.gridPattern} />
       <div className={styles.container}>
         {!submitted ? (
           <div className={styles.card}>

@@ -3,54 +3,44 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-16) var(--space-8);
+  padding: 64px 32px;
   text-align: center;
-  gap: var(--space-3);
+  gap: 12px;
   animation: fadeInUp 0.4s ease-out;
 }
 
 .icon {
-  color: var(--color-navy-200);
-  margin-bottom: var(--space-2);
-  transition: all var(--transition-slow);
+  color: #CBD5E1;
+  margin-bottom: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
-  border-radius: var(--radius-full);
-  background: var(--color-bg);
-}
-
-.icon:hover {
-  color: var(--color-teal-400);
-  transform: scale(1.05);
-  background: var(--color-teal-50);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #F4F7FA;
 }
 
 .title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1E293B;
   margin: 0;
 }
 
 .message {
-  font-size: var(--text-sm);
-  color: var(--color-text-tertiary);
+  font-size: 14px;
+  color: #6B7A90;
   max-width: 360px;
   margin: 0;
 }
 
 .action {
-  margin-top: var(--space-3);
+  margin-top: 12px;
 }
 
-.action > * {
-  transition: all var(--transition-fast);
-}
-
-.action > *:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

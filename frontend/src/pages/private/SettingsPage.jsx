@@ -144,7 +144,7 @@ export function SettingsPage() {
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Telefono</label>
                   <div className={styles.inputWrapper}>
-                    <Icon name="user" size={16} />
+                    <Icon name="phone" size={16} />
                     <input
                       type="tel"
                       className={styles.input}
@@ -214,7 +214,7 @@ export function SettingsPage() {
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Indirizzo</label>
                   <div className={styles.inputWrapper}>
-                    <Icon name="globe" size={16} />
+                    <Icon name="mapPin" size={16} />
                     <input
                       type="text"
                       className={styles.input}

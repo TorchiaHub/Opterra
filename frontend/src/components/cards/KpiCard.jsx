@@ -3,6 +3,7 @@ import styles from './KpiCard.module.css'
 
 export function KpiCard({ label, value, trend, trendLabel, icon, footer }) {
   const trendClass = trend > 0 ? styles.trendUp : trend < 0 ? styles.trendDown : styles.trendNeutral
+  const trendIcon = trend > 0 ? 'trendingUp' : trend < 0 ? 'trendingDown' : 'arrowRight'
 
   return (
     <div className={styles.card}>
@@ -17,11 +18,7 @@ export function KpiCard({ label, value, trend, trendLabel, icon, footer }) {
       <span className={styles.value}>{value}</span>
       {(trend !== undefined || trendLabel) && (
         <span className={`${styles.trend} ${trendClass}`}>
-          <Icon 
-            name={trend > 0 ? 'arrowRight' : trend < 0 ? 'arrowRight' : 'arrowRight'} 
-            size={14} 
-            className={trend > 0 ? styles.trendUpIcon : trend < 0 ? styles.trendDownIcon : ''}
-          />
+          <Icon name={trendIcon} size={14} />
           {trendLabel || Math.abs(trend) + '%'}
         </span>
       )}

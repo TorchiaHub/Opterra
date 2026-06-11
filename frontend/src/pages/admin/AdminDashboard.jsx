@@ -5,6 +5,7 @@ import { SectionCard } from '../../components/cards/SectionCard'
 import { DataTable } from '../../components/tables/DataTable'
 import { EmptyState } from '../../components/feedback/EmptyState'
 import { Loader } from '../../components/feedback/Loader'
+import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
 import { formatDate } from '../../utils/date'
@@ -55,10 +56,10 @@ export function AdminDashboard() {
         title="Admin Dashboard"
         subtitle="Panoramica globale del sistema"
         actions={
-          <button className={styles.actionBtn}>
+          <SubmitButton variant="secondary" onClick={() => {}}>
             <Icon name="refresh" size={16} />
             <span>Aggiorna</span>
-          </button>
+          </SubmitButton>
         }
       />
 
@@ -74,7 +75,7 @@ export function AdminDashboard() {
         <SectionCard
           title="Attività recenti"
           actions={
-            <button className={styles.linkBtn}>
+            <button className={styles.linkBtn} type="button">
               <span>Visualizza tutte</span>
               <Icon name="arrowRight" size={14} />
             </button>
@@ -100,7 +101,7 @@ export function AdminDashboard() {
         <SectionCard
           title="Distribuzione"
           actions={
-            <button className={styles.linkBtn}>
+            <button className={styles.linkBtn} type="button">
               <span>Dettagli</span>
               <Icon name="arrowRight" size={14} />
             </button>

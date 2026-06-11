@@ -5,6 +5,7 @@ import styles from './NotFoundPage.module.css';
 export default function NotFoundPage() {
   return (
     <div className={styles.page}>
+      <div className={styles.gridPattern} />
       <div className={styles.container}>
         <div className={styles.numberWrapper}>
           <span className={styles.number}>4</span>

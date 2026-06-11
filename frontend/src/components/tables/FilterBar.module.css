@@ -1,9 +1,9 @@
 .bar {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: var(--space-4);
+  margin-bottom: 16px;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -16,12 +16,11 @@
 
 .searchIcon {
   position: absolute;
-  left: var(--space-3);
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-tertiary);
+  color: #6B7A90;
   pointer-events: none;
-  transition: all var(--transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -30,76 +29,73 @@
 
 .searchInput {
   width: 100%;
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
+  padding: 8px 12px 8px 36px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  color: var(--color-text-primary);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1E293B;
   background: var(--color-surface);
   outline: none;
-  transition: all var(--transition-fast);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .searchInput:focus {
-  border-color: var(--color-teal-400);
-  box-shadow: 0 0 0 3px rgba(106, 188, 147, 0.12);
-  transform: translateY(-1px);
+  border-color: #2DD4A8;
+  box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
 }
 
-.searchInput:focus + .searchIcon {
-  color: var(--color-teal-500);
+.searchInput:focus ~ .searchIcon {
+  color: #2DD4A8;
 }
 
 .searchInput::placeholder {
-  color: var(--color-text-tertiary);
+  color: #94A3B8;
 }
 
 .select {
-  padding: var(--space-2) var(--space-3);
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  color: var(--color-text-primary);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1E293B;
   background: var(--color-surface);
   outline: none;
   min-width: 140px;
-  transition: all var(--transition-fast);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
 }
 
 .select:focus {
-  border-color: var(--color-teal-400);
-  box-shadow: 0 0 0 3px rgba(106, 188, 147, 0.12);
-  transform: translateY(-1px);
+  border-color: #2DD4A8;
+  box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
 }
 
 .select:hover {
-  border-color: var(--color-navy-200);
+  border-color: #CBD5E1;
 }
 
 .clearBtn {
-  padding: var(--space-2) var(--space-3);
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  color: var(--color-text-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  transition: all var(--transition-fast);
+  color: #475569;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 4px;
 }
 
 .clearBtn:hover {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-  background: var(--color-danger-bg);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  border-color: #EF4444;
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.04);
 }
 
-.clearBtn:active {
-  transform: translateY(0);
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

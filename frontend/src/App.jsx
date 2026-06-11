@@ -33,16 +33,16 @@ function App() {
     <AuthProvider>
       <UIProvider>
         <Routes>
-          <Route element={<AppLayout />}>
-            {/* Public */}
-            <Route path={APP_ROUTES.HOME} element={<HomePage />} />
-            <Route path={APP_ROUTES.FEATURES} element={<FeaturesPage />} />
-            <Route path={APP_ROUTES.PRICING} element={<PricingPage />} />
-            <Route path={APP_ROUTES.DEMO} element={<DemoRequestPage />} />
-            <Route path={APP_ROUTES.LOGIN} element={<LoginPage />} />
-            <Route path={APP_ROUTES.REGISTER} element={<RegisterPage />} />
+          {/* Public routes - no AppLayout wrapper */}
+          <Route path={APP_ROUTES.HOME} element={<HomePage />} />
+          <Route path={APP_ROUTES.FEATURES} element={<FeaturesPage />} />
+          <Route path={APP_ROUTES.PRICING} element={<PricingPage />} />
+          <Route path={APP_ROUTES.DEMO} element={<DemoRequestPage />} />
+          <Route path={APP_ROUTES.LOGIN} element={<LoginPage />} />
+          <Route path={APP_ROUTES.REGISTER} element={<RegisterPage />} />
 
-            {/* Private - tenant */}
+          {/* Private routes - wrapped in AppLayout */}
+          <Route element={<AppLayout />}>
             <Route element={<ProtectedRoute />}>
               <Route path={APP_ROUTES.DASHBOARD} element={<DashboardPage />} />
               <Route path={APP_ROUTES.TENDERS} element={<TendersListPage />} />
@@ -53,7 +53,6 @@ function App() {
               <Route path={APP_ROUTES.SETTINGS} element={<SettingsPage />} />
             </Route>
 
-            {/* Private - admin */}
             <Route element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN} />}>
               <Route path={APP_ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
               <Route path={APP_ROUTES.ADMIN_TENANTS} element={<TenantsPage />} />

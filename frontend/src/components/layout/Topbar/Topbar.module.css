@@ -9,7 +9,6 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  animation: fadeInDown 0.3s ease-out;
 }
 
 .left {
@@ -27,15 +26,14 @@
   border: none;
   background: none;
   color: var(--color-text-secondary);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  border-radius: 10px;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .menuBtn:hover {
   background: var(--color-bg);
-  color: var(--color-navy-900);
-  transform: scale(1.05);
+  color: #0A1628;
 }
 
 .right {
@@ -53,78 +51,74 @@
   border: none;
   background: none;
   color: var(--color-text-secondary);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   position: relative;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .iconBtn:hover {
   background: var(--color-bg);
-  color: var(--color-navy-900);
-  transform: scale(1.05);
+  color: #0A1628;
 }
 
 .notificationDot {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 8px;
-  height: 8px;
-  background: var(--color-danger);
-  border-radius: var(--radius-full);
-  border: 2px solid var(--color-surface);
-  animation: pulse 2s ease-in-out infinite;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  background: #EF4444;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-surface);
 }
 
 .chatBtn {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  padding: 8px 14px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  transition: all var(--transition-fast);
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .chatBtn:hover {
-  border-color: var(--color-teal-400);
-  color: var(--color-teal-600);
-  background: var(--color-teal-50);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  border-color: #2DD4A8;
+  color: #0A1628;
+  background: rgba(45, 212, 168, 0.06);
 }
 
 .chatBtnActive {
-  border-color: var(--color-teal-400);
-  background: var(--color-teal-50);
-  color: var(--color-teal-600);
-  box-shadow: var(--shadow-sm);
+  border-color: #2DD4A8;
+  background: rgba(45, 212, 168, 0.1);
+  color: #2DD4A8;
 }
 
 .avatarBtn {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
-  border: 2px solid var(--color-border);
-  background: var(--color-teal-500);
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: linear-gradient(135deg, #2DD4A8, #4A90D9);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
 }
 
 .avatarBtn:hover {
-  border-color: var(--color-teal-400);
-  transform: scale(1.08);
-  box-shadow: var(--shadow-glow);
+  border-color: #2DD4A8;
+  transform: scale(1.05);
 }

@@ -4,7 +4,7 @@ import { useAuth } from '../../../hooks/useAuth'
 import Icon from '../../Icon'
 import styles from './Topbar.module.css'
 
-export function Topbar() {
+export function Topbar({ hasNotifications = false }) {
   const { toggleSidebar, toggleChatbot, chatbotOpen } = useContext(UIContext)
   const { user, isAuthenticated, logout } = useAuth()
 
@@ -25,7 +25,7 @@ export function Topbar() {
       <div className={styles.right}>
         <button className={styles.iconBtn} aria-label="Notifiche">
           <Icon name="notification" size={20} />
-          <span className={styles.notificationDot} />
+          {hasNotifications && <span className={styles.notificationDot} />}
         </button>
         <button
           className={`${styles.chatBtn} ${chatbotOpen ? styles.chatBtnActive : ''}`}

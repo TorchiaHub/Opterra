@@ -49,7 +49,7 @@
 
 .dateInput:focus {
   border-color: var(--color-teal-400);
-  box-shadow: 0 0 0 3px rgba(106, 188, 147, 0.12);
+  box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
 }
 
 .clearDateBtn {

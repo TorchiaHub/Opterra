@@ -75,6 +75,7 @@ export default function FeaturesPage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
+        <div className={styles.gridPattern} />
         <div className={styles.container}>
           <h1 className={styles.heroTitle}>Features</h1>
           <p className={styles.heroSubtitle}>
@@ -88,6 +89,7 @@ export default function FeaturesPage() {
           <div ref={gridRef} className={styles.featuresGrid}>
             {features.map((f, i) => (
               <div key={f.title} className={styles.featureCard} style={{ transitionDelay: `${i * 0.05}s` }}>
+                <span className={styles.featureNumber}>{String(i + 1).padStart(2, '0')}</span>
                 <div className={styles.featureIcon}>
                   <Icon name={f.icon} size={32} />
                 </div>

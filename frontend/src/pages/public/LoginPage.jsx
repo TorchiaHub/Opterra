@@ -9,6 +9,7 @@ export default function LoginPage() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.gridPattern} />
       <div className={styles.container}>
         <div className={styles.card}>
           <div className={styles.cardHeader}>

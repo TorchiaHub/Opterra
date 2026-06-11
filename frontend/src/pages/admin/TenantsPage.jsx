@@ -5,6 +5,7 @@ import { DataTable } from '../../components/tables/DataTable'
 import { FilterBar } from '../../components/tables/FilterBar'
 import { StatusBadge } from '../../components/feedback/StatusBadge'
 import { EmptyState } from '../../components/feedback/EmptyState'
+import { SubmitButton } from '../../components/forms/SubmitButton'
 import Icon from '../../components/Icon'
 import { APP_ROUTES } from '../../utils/constants'
 import { formatDate } from '../../utils/date'
@@ -19,21 +20,10 @@ const mockTenants = [
   { id: 6, name: 'Zeta Engineering', email: 'contact@zeta.it', users: 17, tenders: 12, status: 'active', createdAt: '2025-09-18' },
 ]
 
-const filters = [
-  {
-    placeholder: 'Stato',
-    value: '',
-    options: [
-      { label: 'Attivo', value: 'active' },
-      { label: 'Disabilitato', value: 'disabled' },
-    ],
-    onChange: () => {},
-  },
-]
-
 export function TenantsPage() {
   const [tenants, setTenants] = useState(mockTenants)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
 
   const toggleStatus = (id) => {
     setTenants(prev => prev.map(t =>
@@ -41,10 +31,13 @@ export function TenantsPage() {
     ))
   }
 
-  const filtered = tenants.filter(t =>
-    t.name.toLowerCase().includes(search.toLowerCase()) ||
-    t.email.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = tenants.filter(t => {
+    const matchSearch =
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      t.email.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter ? t.status === statusFilter : true
+    return matchSearch && matchStatus
+  })
 
   const columns = [
     { label: 'Azienda', render: row => (
@@ -79,11 +72,12 @@ export function TenantsPage() {
     { label: 'Registrato il', render: row => formatDate(row.createdAt) },
     { label: 'Azioni', render: row => (
       <div className={styles.actionsCell}>
-        <button className={styles.actionBtn} title="Modifica">
+        <button className={styles.actionBtn} type="button" title="Modifica">
           <Icon name="edit" size={16} />
         </button>
         <button
           className={`${styles.toggleBtn} ${row.status === 'active' ? styles.toggleActive : styles.toggleDisabled}`}
+          type="button"
           onClick={() => toggleStatus(row.id)}
           title={row.status === 'active' ? 'Disabilita' : 'Attiva'}
         >
@@ -93,6 +87,11 @@ export function TenantsPage() {
       </div>
     )},
   ]
+
+  function handleClearFilters() {
+    setSearch('')
+    setStatusFilter('')
+  }
 
   return (
     <div className={styles.page}>
@@ -104,10 +103,10 @@ export function TenantsPage() {
         title="Tenant"
         subtitle="Gestione di tutti i tenant della piattaforma"
         actions={
-          <button className={styles.primaryBtn}>
+          <SubmitButton variant="primary" onClick={() => {}}>
             <Icon name="plus" size={16} />
             <span>Nuovo Tenant</span>
-          </button>
+          </SubmitButton>
         }
       />
 
@@ -115,9 +114,19 @@ export function TenantsPage() {
         <FilterBar
           searchValue={search}
           onSearchChange={setSearch}
-          filters={filters}
-          onClear={() => setSearch('')}
+          onClear={handleClearFilters}
           searchPlaceholder="Cerca azienda o email..."
+          filters={[
+            {
+              placeholder: 'Stato',
+              value: statusFilter,
+              onChange: setStatusFilter,
+              options: [
+                { label: 'Attivo', value: 'active' },
+                { label: 'Disabilitato', value: 'disabled' },
+              ],
+            },
+          ]}
         />
       </div>
 
