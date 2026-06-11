@@ -210,7 +210,12 @@
       "noActivityMessage": "Recent activity will appear here.",
       "priorityTasks": "Priority Tasks",
       "noTasks": "No tasks",
-      "noTasksMessage": "All tasks are completed."
+      "noTasksMessage": "All tasks are completed.",
+      "viewAll": "View all",
+      "kpiDrafts": "{{count}} drafts",
+      "kpiWonValue": "{{value}} won",
+      "activityCreated": "Tender created:",
+      "activityUpdated": "Tender updated:"
     },
     "tenders": {
       "title": "Tenders",

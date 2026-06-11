@@ -1,4 +1,4 @@
-.backdrop {
+﻿.backdrop {
   position: fixed;
   inset: 0;
   background: rgba(10, 22, 40, 0.5);
@@ -25,10 +25,6 @@
   animation: scaleIn 0.25s ease-out;
 }
 
-.dark .modal {
-  background: var(--glass-popover);
-}
-
 .icon {
   color: var(--color-warning);
   margin-bottom: 12px;
@@ -47,10 +43,6 @@
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 8px;
-}
-
-.dark .title {
-  color: var(--color-text-inverse);
 }
 
 .message {
@@ -77,11 +69,6 @@
   font-family: 'Inter', sans-serif;
   transition: border-color 0.15s ease, color 0.15s ease;
   cursor: pointer;
-}
-
-.dark .btnCancel {
-  background: var(--color-surface);
-  border-color: var(--color-border);
 }
 
 .btnCancel:hover {
@@ -122,10 +109,6 @@
   background: var(--color-navy-900);
   color: var(--color-teal-500);
   border: 1px solid rgba(45, 212, 168, 0.3);
-}
-
-.dark .btnPrimary {
-  color: var(--color-teal-400);
 }
 
 .btnPrimary:hover {

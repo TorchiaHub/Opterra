@@ -1,4 +1,4 @@
-.wrapper {
+﻿.wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,7 +10,7 @@
 }
 
 .icon {
-  color: #CBD5E1;
+  color: var(--color-text-tertiary);
   margin-bottom: 8px;
   display: inline-flex;
   align-items: center;
@@ -18,20 +18,20 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: #F4F7FA;
+  background: var(--color-bg);
 }
 
 .title {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 18px;
   font-weight: 600;
-  color: #1E293B;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
 .message {
   font-size: 14px;
-  color: #6B7A90;
+  color: var(--color-text-secondary);
   max-width: 360px;
   margin: 0;
 }

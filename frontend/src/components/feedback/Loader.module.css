@@ -1,4 +1,4 @@
-.wrapper {
+﻿.wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -20,7 +20,7 @@
   height: 48px;
   border-radius: 50%;
   background: rgba(45, 212, 168, 0.08);
-  color: #2DD4A8;
+  color: var(--color-teal-500);
 }
 
 .spinnerIcon {
@@ -38,7 +38,7 @@
 
 .label {
   font-size: 14px;
-  color: #6B7A90;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 

@@ -1,4 +1,4 @@
-.wrapper {
+﻿.wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,7 +10,7 @@
 }
 
 .icon {
-  color: #EF4444;
+  color: var(--color-danger);
   margin-bottom: 8px;
   display: inline-flex;
   align-items: center;
@@ -25,13 +25,13 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 18px;
   font-weight: 600;
-  color: #EF4444;
+  color: var(--color-danger);
   margin: 0;
 }
 
 .message {
   font-size: 14px;
-  color: #475569;
+  color: var(--color-text-secondary);
   max-width: 400px;
   margin: 0;
 }

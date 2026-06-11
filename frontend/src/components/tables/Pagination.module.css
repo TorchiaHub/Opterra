@@ -1,16 +1,16 @@
-.pagination {
+﻿.pagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
   border-top: 1px solid var(--color-border);
-  background: #F4F7FA;
+  background: var(--color-bg);
   font-size: 14px;
   animation: fadeIn 0.3s ease-out;
 }
 
 .info {
-  color: #6B7A90;
+  color: var(--color-text-secondary);
 }
 
 .buttons {
@@ -22,7 +22,7 @@
   padding: 4px 12px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  color: #475569;
+  color: var(--color-text-secondary);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -36,8 +36,8 @@
 }
 
 .btn:hover:not(:disabled) {
-  border-color: #CBD5E1;
-  color: #0A1628;
+  border-color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
 }
 
 .btn:disabled {
@@ -46,15 +46,15 @@
 }
 
 .btnActive {
-  background: #0A1628;
-  color: white;
-  border-color: #0A1628;
+  background: var(--color-teal-500);
+  color: var(--color-navy-900);
+  border-color: var(--color-teal-600);
 }
 
 .btnActive:hover {
-  background: #132240;
-  border-color: #132240;
-  color: white;
+  background: var(--color-teal-400);
+  border-color: var(--color-teal-500);
+  color: var(--color-navy-900);
 }
 
 @keyframes fadeIn {

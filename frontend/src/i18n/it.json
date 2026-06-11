@@ -210,7 +210,12 @@
       "noActivityMessage": "Le attivita recenti appariranno qui.",
       "priorityTasks": "Task Prioritari",
       "noTasks": "Nessun task",
-      "noTasksMessage": "Tutti i task sono completati."
+      "noTasksMessage": "Tutti i task sono completati.",
+      "viewAll": "Vedi tutte",
+      "kpiDrafts": "{{count}} in bozza",
+      "kpiWonValue": "{{value}} vinti",
+      "activityCreated": "Gara creata:",
+      "activityUpdated": "Gara aggiornata:"
     },
     "tenders": {
       "title": "Gare",

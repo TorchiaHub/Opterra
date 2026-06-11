@@ -1,4 +1,4 @@
-.card {
+﻿.card {
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur-sm);
   -webkit-backdrop-filter: var(--glass-blur-sm);
@@ -32,10 +32,6 @@
   font-weight: 500;
 }
 
-.dark .label {
-  color: rgba(255, 255, 255, 0.5);
-}
-
 .icon {
   color: var(--color-teal-500);
   display: inline-flex;
@@ -48,16 +44,8 @@
   transition: background 0.2s ease;
 }
 
-.dark .icon {
-  background: rgba(45, 212, 168, 0.12);
-}
-
 .card:hover .icon {
   background: var(--color-teal-100);
-}
-
-.dark .card:hover .icon {
-  background: rgba(45, 212, 168, 0.2);
 }
 
 .value {
@@ -66,10 +54,6 @@
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1;
-}
-
-.dark .value {
-  color: var(--color-text-inverse);
 }
 
 .trend {

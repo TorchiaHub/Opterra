@@ -1,4 +1,4 @@
-.card {
+﻿.card {
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur-sm);
   -webkit-backdrop-filter: var(--glass-blur-sm);
@@ -28,10 +28,6 @@
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
-}
-
-.dark .title {
-  color: var(--color-text-inverse);
 }
 
 .actions {

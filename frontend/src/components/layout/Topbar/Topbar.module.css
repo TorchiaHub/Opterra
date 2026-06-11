@@ -1,4 +1,4 @@
-.topbar {
+﻿.topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -75,10 +75,6 @@
   border: 1.5px solid var(--color-surface);
 }
 
-.dark .notificationDot {
-  border-color: var(--color-navy-600);
-}
-
 .chatBtn {
   display: flex;
   align-items: center;
@@ -95,31 +91,16 @@
   cursor: pointer;
 }
 
-.dark .chatBtn {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-}
-
 .chatBtn:hover {
   border-color: var(--color-teal-500);
   color: var(--color-teal-600);
   background: var(--color-teal-50);
 }
 
-.dark .chatBtn:hover {
-  background: rgba(45, 212, 168, 0.08);
-  color: var(--color-teal-400);
-}
-
 .chatBtnActive {
   border-color: var(--color-teal-500);
   background: var(--color-teal-50);
   color: var(--color-teal-600);
-}
-
-.dark .chatBtnActive {
-  background: rgba(45, 212, 168, 0.1);
-  color: var(--color-teal-400);
 }
 
 .langBtn {
@@ -145,11 +126,6 @@
   border-color: var(--color-teal-500);
   color: var(--color-teal-600);
   background: var(--color-teal-50);
-}
-
-.dark .langBtn:hover {
-  background: rgba(45, 212, 168, 0.08);
-  color: var(--color-teal-400);
 }
 
 .avatarBtn {

@@ -1,4 +1,4 @@
-.group {
+﻿.group {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -7,11 +7,11 @@
 .label {
   font-size: 14px;
   font-weight: 500;
-  color: #1E293B;
+  color: var(--color-text-primary);
 }
 
 .required {
-  color: #EF4444;
+  color: var(--color-danger);
   margin-left: 2px;
 }
 
@@ -20,7 +20,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
-  color: #1E293B;
+  color: var(--color-text-primary);
   background: var(--color-surface);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -29,20 +29,20 @@
 }
 
 .input:focus {
-  border-color: #2DD4A8;
+  border-color: var(--color-teal-500);
   box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
 }
 
 .input::placeholder {
-  color: #94A3B8;
+  color: var(--color-text-tertiary);
 }
 
 .input:hover:not(:disabled) {
-  border-color: #CBD5E1;
+  border-color: var(--color-text-tertiary);
 }
 
 .inputError {
-  border-color: #EF4444;
+  border-color: var(--color-danger);
 }
 
 .inputError:focus {
@@ -52,12 +52,12 @@
 .input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #F4F7FA;
+  background: var(--color-bg);
 }
 
 .error {
   font-size: 12px;
-  color: #EF4444;
+  color: var(--color-danger);
   animation: fadeIn 0.2s ease-out;
 }
 

@@ -1,4 +1,4 @@
-.badge {
+﻿.badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -18,38 +18,38 @@
 
 .success {
   background: rgba(16, 185, 129, 0.08);
-  color: #10B981;
+  color: var(--color-success);
 }
 
 .success .dotIcon {
-  color: #10B981;
+  color: var(--color-success);
 }
 
 .warning {
   background: rgba(245, 158, 11, 0.08);
-  color: #F59E0B;
+  color: var(--color-warning);
 }
 
 .warning .dotIcon {
-  color: #F59E0B;
+  color: var(--color-warning);
 }
 
 .danger {
   background: rgba(239, 68, 68, 0.08);
-  color: #EF4444;
+  color: var(--color-danger);
 }
 
 .danger .dotIcon {
-  color: #EF4444;
+  color: var(--color-danger);
 }
 
 .info {
   background: rgba(74, 144, 217, 0.08);
-  color: #4A90D9;
+  color: var(--color-info);
 }
 
 .info .dotIcon {
-  color: #4A90D9;
+  color: var(--color-info);
 }
 
 .pending {
@@ -63,12 +63,12 @@
 }
 
 .neutral {
-  background: #F4F7FA;
-  color: #6B7A90;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
 }
 
 .neutral .dotIcon {
-  color: #6B7A90;
+  color: var(--color-text-secondary);
 }
 
 @keyframes pulse {

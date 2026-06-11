@@ -1,4 +1,4 @@
-.bar {
+﻿.bar {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -19,7 +19,7 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6B7A90;
+  color: var(--color-text-secondary);
   pointer-events: none;
   display: inline-flex;
   align-items: center;
@@ -33,23 +33,23 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
-  color: #1E293B;
+  color: var(--color-text-primary);
   background: var(--color-surface);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .searchInput:focus {
-  border-color: #2DD4A8;
+  border-color: var(--color-teal-500);
   box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
 }
 
 .searchInput:focus ~ .searchIcon {
-  color: #2DD4A8;
+  color: var(--color-teal-500);
 }
 
 .searchInput::placeholder {
-  color: #94A3B8;
+  color: var(--color-text-tertiary);
 }
 
 .select {
@@ -57,7 +57,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
-  color: #1E293B;
+  color: var(--color-text-primary);
   background: var(--color-surface);
   outline: none;
   min-width: 140px;
@@ -66,19 +66,19 @@
 }
 
 .select:focus {
-  border-color: #2DD4A8;
+  border-color: var(--color-teal-500);
   box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.12);
 }
 
 .select:hover {
-  border-color: #CBD5E1;
+  border-color: var(--color-text-tertiary);
 }
 
 .clearBtn {
   padding: 8px 12px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  color: #475569;
+  color: var(--color-text-secondary);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -90,8 +90,8 @@
 }
 
 .clearBtn:hover {
-  border-color: #EF4444;
-  color: #EF4444;
+  border-color: var(--color-danger);
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.04);
 }
 

@@ -191,4 +191,10 @@
   --glass-border-subtle: rgba(42, 63, 82, 0.5);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
   --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
+
+  /* Light tints become translucent accents on dark surfaces */
+  --color-teal-50: rgba(45, 212, 168, 0.1);
+  --color-teal-100: rgba(45, 212, 168, 0.18);
+  --color-blue-50: rgba(74, 144, 217, 0.1);
+  --color-blue-100: rgba(74, 144, 217, 0.18);
 }

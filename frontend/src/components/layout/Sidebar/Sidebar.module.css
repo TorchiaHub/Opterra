@@ -1,4 +1,4 @@
-.sidebar {
+﻿.sidebar {
   position: fixed;
   top: 0;
   left: 0;
@@ -14,10 +14,6 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   border-right: 1px solid var(--glass-border);
-}
-
-.dark .sidebar {
-  color: var(--color-text-inverse);
 }
 
 .collapsed {
@@ -56,10 +52,6 @@
   letter-spacing: -0.02em;
 }
 
-.dark .brandName {
-  color: var(--color-text-inverse);
-}
-
 .collapsed .brandName {
   opacity: 0;
   width: 0;
@@ -96,10 +88,6 @@
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dark .sectionLabel {
-  color: rgba(255, 255, 255, 0.3);
-}
-
 .collapsed .sectionLabel {
   opacity: 0;
   pointer-events: none;
@@ -127,10 +115,6 @@
   overflow: hidden;
 }
 
-.dark .navItem {
-  color: rgba(255, 255, 255, 0.5);
-}
-
 .navItem::before {
   content: '';
   position: absolute;
@@ -149,11 +133,6 @@
   color: var(--color-text-primary);
 }
 
-.dark .navItem:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
-}
-
 .navItem:hover::before {
   transform: translateY(-50%) scaleY(1);
 }
@@ -164,11 +143,6 @@
   font-weight: 600;
 }
 
-.dark .navItemActive {
-  background: rgba(45, 212, 168, 0.1);
-  color: var(--color-teal-400);
-}
-
 .navItemActive::before {
   transform: translateY(-50%) scaleY(1);
 }
@@ -176,11 +150,6 @@
 .navItemActive:hover {
   background: var(--color-teal-100);
   color: var(--color-teal-600);
-}
-
-.dark .navItemActive:hover {
-  background: rgba(45, 212, 168, 0.15);
-  color: var(--color-teal-400);
 }
 
 .navIcon {
@@ -246,10 +215,6 @@
   background: var(--color-surface-active);
 }
 
-.dark .userInfo:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
 .avatar {
   width: 30px;
   height: 30px;
@@ -291,20 +256,12 @@
   white-space: nowrap;
 }
 
-.dark .userName {
-  color: var(--color-text-inverse);
-}
-
 .userRole {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: var(--color-text-tertiary);
   white-space: nowrap;
   text-transform: capitalize;
-}
-
-.dark .userRole {
-  color: rgba(255, 255, 255, 0.35);
 }
 
 .logoutBtn {
@@ -323,18 +280,9 @@
   flex-shrink: 0;
 }
 
-.dark .logoutBtn {
-  color: rgba(255, 255, 255, 0.35);
-}
-
 .logoutBtn:hover {
   background: var(--color-danger-bg);
   color: var(--color-danger);
-}
-
-.dark .logoutBtn:hover {
-  background: rgba(239, 68, 68, 0.12);
-  color: #EF4444;
 }
 
 .collapsed .logoutBtn {

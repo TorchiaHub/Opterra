@@ -143,7 +143,7 @@ async function generateAiResponse(text, session, tenantId) {
         'X-Title': 'TenderFlow',
       },
       body: JSON.stringify({
-        model: 'openrouter/free',
+        model: process.env.OPENROUTER_MODEL || 'openrouter/free',
         messages: [
           { role: 'system', content: 'Sei un assistente specializzato in gare d\'appalto pubbliche italiane. Rispondi in modo conciso e professionale in italiano.' },
           { role: 'user', content: text },
