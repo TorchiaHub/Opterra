@@ -32,6 +32,7 @@
 
   /* === Neutral Scale === */
   --color-bg: #F4F7FA;
+  --color-bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #F4F7FA 52%, #f0f2f8 100%);
   --color-bg-elevated: #FFFFFF;
   --color-surface: #FFFFFF;
   --color-surface-hover: #F8FAFB;
@@ -64,6 +65,18 @@
   --color-pending: #7B5AF6;
   --color-pending-bg: #F0EBFF;
   --color-pending-border: #C8B8F8;
+
+  /* === Glass Tokens === */
+  --glass-card: rgba(255, 255, 255, 0.72);
+  --glass-card-hover: rgba(255, 255, 255, 0.82);
+  --glass-popover: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.52);
+  --glass-border-subtle: rgba(226, 232, 238, 0.4);
+  --glass-shadow: 0 8px 32px rgba(10, 22, 40, 0.08);
+  --glass-shadow-lg: 0 16px 48px rgba(10, 22, 40, 0.12);
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-blur-sm: blur(12px) saturate(160%);
+  --glass-blur-lg: blur(24px) saturate(180%);
 
   /* === Typography === */
   --font-display: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -144,4 +157,38 @@
   --z-drawer: 600;
   --z-toast: 700;
   --z-tooltip: 800;
+}
+
+/* === Dark Mode Tokens === */
+.dark {
+  --color-bg: #0A1628;
+  --color-bg-gradient: linear-gradient(135deg, #0A1628 0%, #0f1f35 52%, #060e1a 100%);
+  --color-bg-elevated: #152a45;
+  --color-surface: #1E2D3D;
+  --color-surface-hover: #2A3F52;
+  --color-surface-active: #3A4F63;
+  --color-border: #2A3F52;
+  --color-border-light: #1E2D3D;
+  --color-border-focus: #2DD4A8;
+
+  --color-text-primary: #E8EEF4;
+  --color-text-secondary: #8BA4B8;
+  --color-text-tertiary: #5A7A94;
+  --color-text-inverse: #0A1628;
+  --color-text-link: #4DE0BB;
+  --color-text-link-hover: #7AECCC;
+
+  --color-success-bg: rgba(16, 168, 84, 0.15);
+  --color-warning-bg: rgba(212, 144, 10, 0.15);
+  --color-danger-bg: rgba(216, 64, 64, 0.15);
+  --color-info-bg: rgba(53, 112, 192, 0.15);
+  --color-pending-bg: rgba(123, 90, 246, 0.15);
+
+  --glass-card: rgba(30, 45, 61, 0.62);
+  --glass-card-hover: rgba(30, 45, 61, 0.78);
+  --glass-popover: rgba(30, 45, 61, 0.86);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(42, 63, 82, 0.5);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
 }

@@ -1,19 +1,19 @@
-import { useContext } from 'react'
-import { UIContext } from '../../../context/UIContext'
-import { useAuth } from '../../../hooks/useAuth'
-import Icon from '../../Icon'
-import styles from './Topbar.module.css'
+import { useContext } from 'react';
+import { UIContext } from '../../../context/UIContext';
+import { useAuth } from '../../../hooks/useAuth';
+import Icon from '../../Icon';
+import styles from './Topbar.module.css';
 
 export function Topbar({ hasNotifications = false }) {
-  const { toggleSidebar, toggleChatbot, chatbotOpen } = useContext(UIContext)
-  const { user, isAuthenticated, logout } = useAuth()
+  const { toggleSidebar, toggleChatbot, toggleTheme, theme, chatbotOpen } = useContext(UIContext);
+  const { user, isAuthenticated, logout } = useAuth();
 
   function getInitials(name) {
-    if (!name) return '?'
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
-  if (!isAuthenticated) return null
+  if (!isAuthenticated) return null;
 
   return (
     <header className={styles.topbar}>
@@ -23,6 +23,9 @@ export function Topbar({ hasNotifications = false }) {
         </button>
       </div>
       <div className={styles.right}>
+        <button className={styles.iconBtn} onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
+        </button>
         <button className={styles.iconBtn} aria-label="Notifiche">
           <Icon name="notification" size={20} />
           {hasNotifications && <span className={styles.notificationDot} />}
@@ -39,5 +42,5 @@ export function Topbar({ hasNotifications = false }) {
         </button>
       </div>
     </header>
-  )
+  );
 }

@@ -1,18 +1,22 @@
 .card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   cursor: default;
+  box-shadow: var(--glass-shadow);
 }
 
 .card:hover {
-  box-shadow: 0 2px 12px rgba(10, 22, 40, 0.06);
-  border-color: #2DD4A8;
+  box-shadow: var(--glass-shadow-lg);
+  border-color: var(--color-teal-500);
+  transform: translateY(-2px);
 }
 
 .header {
@@ -24,32 +28,48 @@
 .label {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
-  color: #6B7A90;
+  color: var(--color-text-tertiary);
   font-weight: 500;
 }
 
+.dark .label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .icon {
-  color: #2DD4A8;
+  color: var(--color-teal-500);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
-  background: rgba(45, 212, 168, 0.08);
+  border-radius: var(--radius-md);
+  background: var(--color-teal-50);
   transition: background 0.2s ease;
 }
 
+.dark .icon {
+  background: rgba(45, 212, 168, 0.12);
+}
+
 .card:hover .icon {
-  background: rgba(45, 212, 168, 0.14);
+  background: var(--color-teal-100);
+}
+
+.dark .card:hover .icon {
+  background: rgba(45, 212, 168, 0.2);
 }
 
 .value {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 32px;
   font-weight: 700;
-  color: #0A1628;
+  color: var(--color-text-primary);
   line-height: 1;
+}
+
+.dark .value {
+  color: var(--color-text-inverse);
 }
 
 .trend {
@@ -61,7 +81,7 @@
 }
 
 .trendUp {
-  color: #10B981;
+  color: var(--color-success);
 }
 
 .trendUpIcon {
@@ -69,7 +89,7 @@
 }
 
 .trendDown {
-  color: #EF4444;
+  color: var(--color-danger);
 }
 
 .trendDownIcon {
@@ -77,11 +97,11 @@
 }
 
 .trendNeutral {
-  color: #6B7A90;
+  color: var(--color-text-tertiary);
 }
 
 .footer {
   font-size: 12px;
-  color: #6B7A90;
+  color: var(--color-text-tertiary);
   margin-top: 4px;
 }

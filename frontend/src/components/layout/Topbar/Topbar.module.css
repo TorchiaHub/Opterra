@@ -4,8 +4,10 @@
   justify-content: space-between;
   height: var(--topbar-height);
   padding: 0 var(--space-6);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  border-bottom: 1px solid var(--glass-border);
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
@@ -32,8 +34,8 @@
 }
 
 .menuBtn:hover {
-  background: var(--color-bg);
-  color: #0A1628;
+  background: var(--color-surface-active);
+  color: var(--color-text-primary);
 }
 
 .right {
@@ -58,8 +60,8 @@
 }
 
 .iconBtn:hover {
-  background: var(--color-bg);
-  color: #0A1628;
+  background: var(--color-surface-active);
+  color: var(--color-text-primary);
 }
 
 .notificationDot {
@@ -68,9 +70,13 @@
   right: 7px;
   width: 7px;
   height: 7px;
-  background: #EF4444;
+  background: var(--color-danger);
   border-radius: 50%;
   border: 1.5px solid var(--color-surface);
+}
+
+.dark .notificationDot {
+  border-color: var(--color-navy-600);
 }
 
 .chatBtn {
@@ -89,16 +95,31 @@
   cursor: pointer;
 }
 
+.dark .chatBtn {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
 .chatBtn:hover {
-  border-color: #2DD4A8;
-  color: #0A1628;
-  background: rgba(45, 212, 168, 0.06);
+  border-color: var(--color-teal-500);
+  color: var(--color-teal-600);
+  background: var(--color-teal-50);
+}
+
+.dark .chatBtn:hover {
+  background: rgba(45, 212, 168, 0.08);
+  color: var(--color-teal-400);
 }
 
 .chatBtnActive {
-  border-color: #2DD4A8;
+  border-color: var(--color-teal-500);
+  background: var(--color-teal-50);
+  color: var(--color-teal-600);
+}
+
+.dark .chatBtnActive {
   background: rgba(45, 212, 168, 0.1);
-  color: #2DD4A8;
+  color: var(--color-teal-400);
 }
 
 .avatarBtn {
@@ -106,7 +127,7 @@
   height: 32px;
   border-radius: 50%;
   border: 1.5px solid var(--color-border);
-  background: linear-gradient(135deg, #2DD4A8, #4A90D9);
+  background: linear-gradient(135deg, var(--color-teal-500), var(--color-blue-500));
   color: white;
   display: flex;
   align-items: center;
@@ -119,6 +140,7 @@
 }
 
 .avatarBtn:hover {
-  border-color: #2DD4A8;
+  border-color: var(--color-teal-500);
   transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(45, 212, 168, 0.3);
 }

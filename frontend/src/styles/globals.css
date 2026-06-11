@@ -21,8 +21,11 @@ body {
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--color-text-primary);
-  background-color: var(--color-bg);
+  background: var(--color-bg);
+  background-image: var(--color-bg-gradient);
+  background-attachment: fixed;
   min-height: 100vh;
+  transition: background var(--transition-slow), color var(--transition-slow);
 }
 
 #root {
@@ -103,14 +106,95 @@ code, pre {
   background: var(--color-navy-300);
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-navy-500);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-navy-400);
+}
+
 ::selection {
   background: var(--color-teal-200);
   color: var(--color-navy-900);
 }
 
+.dark ::selection {
+  background: var(--color-teal-600);
+  color: var(--color-text-inverse);
+}
+
 :focus-visible {
   outline: 2px solid var(--color-border-focus);
   outline-offset: 2px;
+}
+
+/* ====== GLASS UTILITIES ====== */
+.glass-card {
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card-hover {
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow);
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--glass-card-hover);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+.glass-header {
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.glass-sidebar {
+  background: var(--glass-card);
+  backdrop-filter: var(--glass-blur-lg);
+  -webkit-backdrop-filter: var(--glass-blur-lg);
+  border-right: 1px solid var(--glass-border);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.34);
+  transform: translateY(-1px);
+}
+
+.dark .glass-button {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dark .glass-button:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-teal-500) 0%, var(--color-blue-500) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ====== KEYFRAMES ====== */
@@ -171,16 +255,6 @@ code, pre {
 @keyframes glow {
   0%, 100% { box-shadow: 0 0 8px rgba(45, 212, 168, 0.15); }
   50% { box-shadow: 0 0 24px rgba(45, 212, 168, 0.3); }
-}
-
-@keyframes slideExpand {
-  0% { max-width: 0; opacity: 0; overflow: hidden; }
-  100% { max-width: 300px; opacity: 1; }
-}
-
-@keyframes countUp {
-  0% { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes blurIn {
