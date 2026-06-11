@@ -11,6 +11,37 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   min-height: 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background var(--transition-fast);
+}
+
+.btn:hover::after {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .primary {
@@ -30,6 +61,7 @@
 
 .secondary:hover:not(:disabled) {
   border-color: var(--color-navy-200);
+  background: var(--color-bg);
 }
 
 .accent {
@@ -39,6 +71,7 @@
 
 .accent:hover:not(:disabled) {
   background: var(--color-teal-600);
+  box-shadow: var(--shadow-glow);
 }
 
 .danger {
@@ -47,20 +80,16 @@
 }
 
 .danger:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  background: #b91c1c;
 }
 
 .spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinnerIcon {
   animation: spin 0.6s linear infinite;
 }
 

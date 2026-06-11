@@ -4,6 +4,7 @@
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-6);
+  animation: fadeInUp 0.4s ease-out;
 }
 
 .titleGroup {
@@ -16,12 +17,14 @@
   font-weight: var(--font-bold);
   color: var(--color-navy-900);
   margin: 0;
+  transition: color var(--transition-fast);
 }
 
 .subtitle {
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin-top: var(--space-1);
+  animation: fadeIn 0.5s ease-out 0.1s both;
 }
 
 .actions {
@@ -29,4 +32,13 @@
   align-items: center;
   gap: var(--space-3);
   flex-shrink: 0;
+  animation: fadeIn 0.4s ease-out 0.2s both;
+}
+
+.actions > * {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.actions > *:hover {
+  transform: translateY(-2px);
 }

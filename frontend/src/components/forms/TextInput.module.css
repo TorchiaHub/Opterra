@@ -8,6 +8,7 @@
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   color: var(--color-text-primary);
+  transition: color var(--transition-fast);
 }
 
 .required {
@@ -23,16 +24,27 @@
   color: var(--color-text-primary);
   background: var(--color-surface);
   outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
+  width: 100%;
 }
 
 .input:focus {
   border-color: var(--color-teal-400);
   box-shadow: 0 0 0 3px rgba(106, 188, 147, 0.12);
+  transform: translateY(-1px);
 }
 
 .input::placeholder {
   color: var(--color-text-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.input:focus::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-navy-200);
 }
 
 .inputError {
@@ -43,7 +55,19 @@
   box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
 }
 
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-bg);
+}
+
 .error {
   font-size: var(--text-xs);
   color: var(--color-danger);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

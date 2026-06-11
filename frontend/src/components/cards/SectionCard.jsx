@@ -6,7 +6,7 @@ export function SectionCard({ title, actions, children, noPadding = false }) {
       {title && (
         <div className={styles.header}>
           <h3 className={styles.title}>{title}</h3>
-          {actions && <div>{actions}</div>}
+          {actions && <div className={styles.actions}>{actions}</div>}
         </div>
       )}
       <div className={`${styles.body} ${noPadding ? styles.bodyNoPadding : ''}`}>

@@ -1,0 +1,232 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* ===== HERO ===== */
+.hero {
+  background: linear-gradient(135deg, var(--color-navy-900) 0%, var(--color-navy-800) 60%, var(--color-teal-600) 100%);
+  padding: var(--space-24) 0 var(--space-16);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(106, 188, 147, 0.12) 0%, transparent 60%);
+}
+
+.heroTitle {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: #ffffff;
+  margin-bottom: var(--space-4);
+  position: relative;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.heroSubtitle {
+  font-size: var(--text-lg);
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 500px;
+  margin: 0 auto;
+  position: relative;
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+/* ===== PRICING ===== */
+.pricing {
+  padding: var(--space-16) 0 var(--space-24);
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.planCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  position: relative;
+  transition: all var(--transition-slow);
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.planCard:hover,
+.planCard.lifted {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
+}
+
+.planCard.highlighted {
+  border-color: var(--color-teal-400);
+  box-shadow: var(--shadow-glow);
+  background: linear-gradient(180deg, var(--color-surface) 0%, rgba(106, 188, 147, 0.04) 100%);
+}
+
+.planCard.highlighted:hover,
+.planCard.highlighted.lifted {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-glow), var(--shadow-xl);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--color-teal-500) 0%, var(--color-teal-400) 100%);
+  color: var(--color-navy-900);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  box-shadow: var(--shadow-md);
+  animation: fadeInDown 0.4s ease-out 0.3s both;
+}
+
+.planName {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-navy-900);
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.planPrice {
+  text-align: center;
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.currency {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-medium);
+}
+
+.amount {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--color-navy-900);
+}
+
+.period {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+.planDescription {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+  min-height: 2.5rem;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.planFeature {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.checkIcon {
+  color: var(--color-teal-500);
+  flex-shrink: 0;
+}
+
+.planCta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  transition: all var(--transition-base);
+  text-decoration: none;
+  border: none;
+}
+
+.ctaPrimary {
+  background: linear-gradient(135deg, var(--color-navy-900) 0%, var(--color-teal-500) 100%);
+  color: #ffffff;
+  box-shadow: var(--shadow-md);
+}
+
+.ctaPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  color: #ffffff;
+}
+
+.ctaSecondary {
+  background: var(--color-surface-hover);
+  color: var(--color-navy-900);
+  border: 1px solid var(--color-border);
+}
+
+.ctaSecondary:hover {
+  background: var(--color-navy-900);
+  color: #ffffff;
+  border-color: var(--color-navy-900);
+}
+
+.ctaIcon {
+  transition: transform var(--transition-base);
+}
+
+.planCta:hover .ctaIcon {
+  transform: translateX(3px);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .plansGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .plansGrid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .heroTitle {
+    font-size: var(--text-3xl);
+  }
+}

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Icon from '../../Icon'
 import styles from './Breadcrumbs.module.css'
 
 export function Breadcrumbs({ items = [] }) {
@@ -8,7 +9,11 @@ export function Breadcrumbs({ items = [] }) {
         const isLast = index === items.length - 1
         return (
           <span key={index} className={styles.item}>
-            {index > 0 && <span className={styles.separator}>/</span>}
+            {index > 0 && (
+              <span className={styles.separator}>
+                <Icon name="chevronRight" size={14} />
+              </span>
+            )}
             {isLast ? (
               <span className={styles.current}>{item.label}</span>
             ) : (

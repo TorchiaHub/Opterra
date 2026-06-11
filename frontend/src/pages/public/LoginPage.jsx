@@ -1,81 +1,95 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { TextInput } from '../../components/forms/TextInput'
-import { SubmitButton } from '../../components/forms/SubmitButton'
-import { APP_ROUTES } from '../../utils/constants'
-import styles from './LoginPage.module.css'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Icon from '../../components/Icon.jsx';
+import styles from './LoginPage.module.css';
 
-export function LoginPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    setError('')
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    try {
-      await login(form.email, form.password)
-      navigate(APP_ROUTES.DASHBOARD)
-    } catch (err) {
-      setError(err?.response?.data?.error?.message || 'Email o password non validi')
-    } finally {
-      setLoading(false)
-    }
-  }
+export default function LoginPage() {
+  const [remember, setRemember] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.card}>
-          <div className={styles.brand}>
-            <img src="/opterra-logo.png" alt="Opterra" className={styles.logo} />
-            <span className={styles.brandName}>TenderFlow</span>
-            <p className={styles.brandSub}>Accedi al tuo workspace</p>
+          <div className={styles.cardHeader}>
+            <div className={styles.logoWrapper}>
+              <Icon name="sparkles" size={40} className={styles.logo} />
+            </div>
+            <h1 className={styles.title}>Welcome back</h1>
+            <p className={styles.subtitle}>Sign in to your Opterra account</p>
           </div>
 
-          {error && <div className={styles.error}>{error}</div>}
-
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <TextInput
-              label="Email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="nome@azienda.it"
-              required
-            />
-            <TextInput
-              label="Password"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-            />
-            <div className={styles.submitBtn}>
-              <SubmitButton loading={loading} variant="primary">
-                Accedi
-              </SubmitButton>
+          <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+            <div className={styles.field}>
+              <label className={styles.label}>
+                <Icon name="mail" size={16} className={styles.labelIcon} />
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                className={styles.input}
+                placeholder="you@company.com"
+              />
             </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>
+                <Icon name="lock" size={16} className={styles.labelIcon} />
+                Password
+              </label>
+              <div className={styles.passwordWrapper}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className={styles.input}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  <Icon name="eye" size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.options}>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className={styles.checkboxInput}
+                />
+                <span className={styles.checkboxCheck}>
+                  <Icon name="check" size={12} />
+                </span>
+                <span className={styles.checkboxLabel}>Remember me</span>
+              </label>
+              <Link to="/forgot-password" className={styles.forgotLink}>
+                Forgot password?
+              </Link>
+            </div>
+
+            <button type="submit" className={styles.submitBtn}>
+              <Icon name="arrowRight" size={18} />
+              Sign In
+            </button>
           </form>
 
           <div className={styles.footer}>
-            Non hai un account?{' '}
-            <Link to={APP_ROUTES.REGISTER} className={styles.link}>Registra la tua azienda</Link>
+            <p className={styles.footerText}>
+              Don't have an account?{' '}
+              <Link to="/register" className={styles.footerLink}>
+                Create one
+              </Link>
+            </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

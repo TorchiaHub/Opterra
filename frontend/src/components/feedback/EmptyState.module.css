@@ -6,12 +6,26 @@
   padding: var(--space-16) var(--space-8);
   text-align: center;
   gap: var(--space-3);
+  animation: fadeInUp 0.4s ease-out;
 }
 
 .icon {
-  font-size: 3rem;
+  color: var(--color-navy-200);
   margin-bottom: var(--space-2);
-  opacity: 0.5;
+  transition: all var(--transition-slow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+}
+
+.icon:hover {
+  color: var(--color-teal-400);
+  transform: scale(1.05);
+  background: var(--color-teal-50);
 }
 
 .title {
@@ -30,4 +44,13 @@
 
 .action {
   margin-top: var(--space-3);
+}
+
+.action > * {
+  transition: all var(--transition-fast);
+}
+
+.action > *:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }

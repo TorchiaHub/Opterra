@@ -1,4 +1,4 @@
-import { useDebounce } from '../../hooks/useDebounce'
+import Icon from '../Icon'
 import styles from './FilterBar.module.css'
 
 export function FilterBar({
@@ -11,7 +11,9 @@ export function FilterBar({
   return (
     <div className={styles.bar}>
       <div className={styles.search}>
-        <span className={styles.searchIcon}>🔍</span>
+        <span className={styles.searchIcon}>
+          <Icon name="search" size={16} />
+        </span>
         <input
           type="text"
           className={styles.searchInput}
@@ -35,7 +37,8 @@ export function FilterBar({
       ))}
       {onClear && (
         <button className={styles.clearBtn} onClick={onClear}>
-          Azzera filtri
+          <Icon name="close" size={14} />
+          <span>Azzera filtri</span>
         </button>
       )}
     </div>

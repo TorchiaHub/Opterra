@@ -6,6 +6,7 @@
   border-top: 1px solid var(--color-border);
   background: var(--color-bg);
   font-size: var(--text-sm);
+  animation: fadeIn 0.3s ease-out;
 }
 
 .info {
@@ -26,20 +27,37 @@
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   transition: all var(--transition-fast);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
 }
 
 .btn:hover:not(:disabled) {
   border-color: var(--color-navy-200);
   color: var(--color-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btnActive {
   background: var(--color-navy-900);
   color: white;
   border-color: var(--color-navy-900);
+  box-shadow: var(--shadow-sm);
+}
+
+.btnActive:hover {
+  background: var(--color-navy-800);
+  border-color: var(--color-navy-800);
+  color: white;
 }

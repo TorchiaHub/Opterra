@@ -8,12 +8,22 @@
   font-weight: var(--font-semibold);
   white-space: nowrap;
   line-height: 1.5;
+  transition: all var(--transition-fast);
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.dotIcon {
+  transition: all var(--transition-fast);
+}
+
+.badge:hover .dotIcon {
+  transform: scale(1.3);
 }
 
 .success {
@@ -21,39 +31,52 @@
   color: var(--color-success);
 }
 
-.success .dot { background: var(--color-success); }
+.success .dotIcon {
+  color: var(--color-success);
+}
 
 .warning {
   background: var(--color-warning-bg);
   color: var(--color-warning);
 }
 
-.warning .dot { background: var(--color-warning); }
+.warning .dotIcon {
+  color: var(--color-warning);
+}
 
 .danger {
   background: var(--color-danger-bg);
   color: var(--color-danger);
 }
 
-.danger .dot { background: var(--color-danger); }
+.danger .dotIcon {
+  color: var(--color-danger);
+}
 
 .info {
   background: var(--color-info-bg);
   color: var(--color-info);
 }
 
-.info .dot { background: var(--color-info); }
+.info .dotIcon {
+  color: var(--color-info);
+}
 
 .pending {
   background: var(--color-pending-bg);
   color: var(--color-pending);
 }
 
-.pending .dot { background: var(--color-pending); }
+.pending .dotIcon {
+  color: var(--color-pending);
+  animation: pulse 2s ease-in-out infinite;
+}
 
 .neutral {
   background: var(--color-bg);
   color: var(--color-text-tertiary);
 }
 
-.neutral .dot { background: var(--color-text-tertiary); }
+.neutral .dotIcon {
+  color: var(--color-text-tertiary);
+}

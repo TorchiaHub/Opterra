@@ -1,10 +1,12 @@
 .layout {
   display: flex;
   min-height: 100vh;
+  background: var(--color-bg);
 }
 
 .sidebar {
   flex-shrink: 0;
+  transition: all var(--transition-slow);
 }
 
 .main {
@@ -13,7 +15,7 @@
   flex-direction: column;
   min-width: 0;
   margin-left: var(--sidebar-width);
-  transition: margin-left var(--transition-base);
+  transition: margin-left var(--transition-slow);
 }
 
 .mainExpanded {
@@ -26,10 +28,5 @@
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  animation: fadeInUp 0.3s ease-out;
 }
