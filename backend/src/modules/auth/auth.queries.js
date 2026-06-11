@@ -116,6 +116,21 @@ async function getTenantBySlug(slug) {
   return rows[0] || null
 }
 
+async function findRevokedRefreshToken(tokenHash) {
+  const [rows] = await pool.query(
+    `SELECT * FROM refresh_tokens WHERE token_hash = ? AND revoked_at IS NOT NULL LIMIT 1`,
+    [tokenHash]
+  )
+  return rows[0] || null
+}
+
+async function revokeAllUserTokens(userId) {
+  await pool.query(
+    `UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL`,
+    [userId]
+  )
+}
+
 export {
   createTenantWithManager,
   findUserByEmail,
@@ -123,6 +138,8 @@ export {
   insertRefreshToken,
   revokeRefreshToken,
   findRefreshToken,
+  findRevokedRefreshToken,
+  revokeAllUserTokens,
   updateLastLogin,
   getUserById,
   getTenantBySlug,

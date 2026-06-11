@@ -521,7 +521,24 @@ Ogni modulo ha un file `{modulo}.queries.js` con funzioni isolate per le query S
 | `getSessionById` | `(sessionId, tenantId)` | Verifica esistenza e proprietario sessione | `SELECT * FROM chat_sessions WHERE id=? AND tenant_id=? LIMIT 1` |
 | `updateSessionTimestamp` | `(sessionId)` | Aggiorna updated_at della sessione | `UPDATE chat_sessions SET updated_at=NOW() WHERE id=?` |
 
-### 2.11 `audit.queries.js`
+### 2.11 `admin.queries.js`
+
+| Funzione | Parametri | Descrizione | SQL |
+|---|---|---|---|
+| `getAllTenants` | `(filters, pagination)` | Lista tenant con piano, user/tender count, filtri (search, status) | `SELECT t.*, p.name as plan_name, ... (SELECT COUNT(*) FROM users WHERE tenant_id=t.id) as user_count FROM tenants t LEFT JOIN subscriptions s ON s.tenant_id=t.id AND s.status='active' LEFT JOIN plans p ON p.id=s.plan_id WHERE t.deleted_at IS NULL ... ORDER BY t.created_at DESC LIMIT ? OFFSET ?` |
+| `getTenantDetail` | `(tenantId)` | Dettaglio tenant con piano e limiti | `SELECT t.*, p.name as plan_name, p.code, p.max_users, p.max_tenders, p.max_storage_mb, p.max_ai_requests_month, s.status as subscription_status, s.starts_at, s.ends_at, s.trial_ends_at, s.auto_renew, (SELECT COUNT(*) FROM users WHERE tenant_id=t.id) as user_count, (SELECT COUNT(*) FROM tenders WHERE tenant_id=t.id) as tender_count FROM tenants t LEFT JOIN subscriptions s ON s.tenant_id=t.id AND s.status='active' LEFT JOIN plans p ON p.id=s.plan_id WHERE t.id=? AND t.deleted_at IS NULL` |
+| `updateTenantStatus` | `(tenantId, status, blockedReason)` | Blocca/sblocca tenant | `UPDATE tenants SET status=?, blocked_reason=? WHERE id=? AND deleted_at IS NULL` |
+| `updateTenantPlan` | `(tenantId, planId)` | Cambia piano a un tenant | `UPDATE subscriptions SET plan_id=? WHERE tenant_id=? AND status='active'` oppure `INSERT INTO subscriptions ...` se non esiste |
+| `updateTenant` | `(tenantId, payload)` | Aggiorna profilo tenant (name, slug, vat, industry, country) | `UPDATE tenants SET ... WHERE id=? AND deleted_at IS NULL` |
+| `getAllUsers` | `(filters, pagination)` | Lista globale utenti con filtro tenant/ruolo/search | `SELECT u.*, r.code as role_code, t.name as tenant_name FROM users u JOIN user_roles ur ON ur.user_id=u.id JOIN roles r ON r.id=ur.role_id JOIN tenants t ON t.id=u.tenant_id WHERE u.deleted_at IS NULL ... ORDER BY u.created_at DESC LIMIT ? OFFSET ?` |
+| `setUserRole` | `(userId, roleCode)` | Cambia ruolo utente | `DELETE FROM user_roles WHERE user_id=?` + `INSERT INTO user_roles (user_id, role_id) VALUES (?,?)` |
+| `getAllPlans` | `()` | Lista piani disponibili | `SELECT * FROM plans ORDER BY max_users ASC` |
+| `createPlan` | `(payload)` | Crea nuovo piano | `INSERT INTO plans (code, name, max_users, max_tenders, max_storage_mb, max_ai_requests_month) VALUES (?, ?, ?, ?, ?, ?)` |
+| `updatePlan` | `(planId, payload)` | Modifica piano | `UPDATE plans SET ... WHERE id=?` |
+| `getTenantSubscription` | `(tenantId)` | Abbonamento attivo del tenant con limiti | `SELECT s.*, p.code, p.name, p.max_users, p.max_tenders, p.max_storage_mb, p.max_ai_requests_month FROM subscriptions s JOIN plans p ON p.id=s.plan_id WHERE s.tenant_id=? AND s.status='active'` |
+| `checkTenantLimits` | `(tenantId)` | Verifica limiti tenant (utenti, gare, storage) | `SELECT COUNT(*) FROM users/tenders WHERE tenant_id=?` + `SELECT COALESCE(SUM(file_size),0) FROM documents WHERE tenant_id=?` |
+
+### 2.12 `audit.queries.js`
 
 | Funzione | Parametri | Descrizione | SQL |
 |---|---|---|---|
@@ -532,7 +549,22 @@ Ogni modulo ha un file `{modulo}.queries.js` con funzioni isolate per le query S
 
 ---
 
-## 3. API Routes
+### 3.12 Admin — `/api/admin` (superadmin only)
+
+| Metodo | Path | Descrizione | Auth | Ruolo |
+|---|---|---|---|---|
+| GET | `/api/admin/tenants` | Lista tenant con piano, utenti, gare | Bearer | superadmin |
+| GET | `/api/admin/tenants/:id` | Dettaglio tenant con limiti e sub | Bearer | superadmin |
+| PATCH | `/api/admin/tenants/:id` | Modifica profilo tenant | Bearer | superadmin |
+| PATCH | `/api/admin/tenants/:id/status` | Blocca/sblocca/sospendi tenant | Bearer | superadmin |
+| PATCH | `/api/admin/tenants/:id/plan` | Cambia piano a tenant | Bearer | superadmin |
+| GET | `/api/admin/tenants/:id/usage` | Utilizzo corrente tenant (utenti/gare/storage vs limiti) | Bearer | superadmin |
+| GET | `/api/admin/users` | Lista globale utenti | Bearer | superadmin |
+| PATCH | `/api/admin/users/:id/role` | Cambia ruolo utente | Bearer | superadmin |
+| GET | `/api/admin/plans` | Lista piani | Bearer | superadmin |
+| POST | `/api/admin/plans` | Crea nuovo piano | Bearer | superadmin |
+| PATCH | `/api/admin/plans/:id` | Modifica piano | Bearer | superadmin |
+| GET | `/api/admin/audit` | Log audit globali cross-tenant | Bearer | superadmin |
 
 ### 3.1 Auth — `/api/auth`
 
