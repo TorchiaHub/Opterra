@@ -1,0 +1,40 @@
+.dropzone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--color-bg);
+}
+
+.dropzone:hover {
+  border-color: var(--color-teal-400);
+  background: var(--color-teal-50);
+}
+
+.active {
+  border-color: var(--color-teal-400);
+  background: var(--color-teal-50);
+}
+
+.icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.hidden {
+  display: none;
+}
