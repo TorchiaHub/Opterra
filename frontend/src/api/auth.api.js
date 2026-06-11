@@ -31,6 +31,6 @@ export async function logout() {
 }
 
 export async function getMe() {
-  const { data } = await client.get('/me')
+  const { data } = await client.get('/me/tenant')
   return data.data
 }

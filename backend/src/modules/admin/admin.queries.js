@@ -117,7 +117,7 @@ async function updateTenant(tenantId, payload) {
 }
 
 async function getAllUsers(filters = {}, pagination = {}) {
-  let sql = `SELECT u.*, r.code as role_code, t.name as tenant_name, t.slug as tenant_slug
+  let sql = `SELECT u.id, u.tenant_id, u.email, u.first_name, u.last_name, u.avatar_url, u.status, u.last_login_at, u.created_at, u.updated_at, r.code as role_code, t.name as tenant_name, t.slug as tenant_slug
              FROM users u
              JOIN user_roles ur ON ur.user_id = u.id
              JOIN roles r ON r.id = ur.role_id
@@ -234,7 +234,10 @@ async function checkTenantLimits(tenantId) {
     [tenantId]
   )
   const [storageUsed] = await pool.query(
-    'SELECT COALESCE(SUM(file_size), 0) as total FROM documents WHERE tenant_id = ? AND deleted_at IS NULL',
+    `SELECT COALESCE(SUM(dv.size_bytes), 0) as total
+     FROM documents d
+     LEFT JOIN document_versions dv ON dv.id = d.current_version_id
+     WHERE d.tenant_id = ? AND d.deleted_at IS NULL`,
     [tenantId]
   )
 

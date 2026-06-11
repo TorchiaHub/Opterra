@@ -13,18 +13,18 @@ export async function uploadDocument(tenderId, formData) {
 }
 
 export async function downloadDocument(docId) {
-  const { data } = await client.get(`/documents/${docId}/download`, {
+  const { data } = await client.get(`/tenders/documents/${docId}/download`, {
     responseType: 'blob',
   })
   return data
 }
 
 export async function getDocumentVersions(docId) {
-  const { data } = await client.get(`/documents/${docId}/versions`)
+  const { data } = await client.get(`/tenders/documents/${docId}/versions`)
   return data.data
 }
 
 export async function deleteDocument(docId) {
-  const { data } = await client.delete(`/documents/${docId}`)
+  const { data } = await client.delete(`/tenders/documents/${docId}`)
   return data.data
 }

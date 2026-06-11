@@ -10,8 +10,8 @@ export async function inviteUser(payload) {
   return data.data
 }
 
-export async function updateUserRole(id, role) {
-  const { data } = await client.patch(`/users/${id}/role`, { role })
+export async function updateUserRole(id, roleCode) {
+  const { data } = await client.patch(`/users/${id}/role`, { roleCode })
   return data.data
 }
 

@@ -11,11 +11,11 @@ export async function createRequirement(tenderId, payload) {
 }
 
 export async function updateRequirementItem(itemId, payload) {
-  const { data } = await client.patch(`/requirements/${itemId}`, payload)
+  const { data } = await client.patch(`/tenders/requirements/${itemId}`, payload)
   return data.data
 }
 
 export async function deleteRequirementItem(itemId) {
-  const { data } = await client.delete(`/requirements/${itemId}`)
+  const { data } = await client.delete(`/tenders/requirements/${itemId}`)
   return data.data
 }

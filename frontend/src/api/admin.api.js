@@ -15,13 +15,18 @@ export async function updateTenantStatus(id, status) {
   return data.data
 }
 
-export async function getSubscriptions(params) {
-  const { data } = await client.get('/admin/subscriptions', { params })
+export async function getPlans() {
+  const { data } = await client.get('/admin/plans')
   return data.data
 }
 
-export async function updateSubscription(id, payload) {
-  const { data } = await client.patch(`/admin/subscriptions/${id}`, payload)
+export async function updatePlan(id, payload) {
+  const { data } = await client.patch(`/admin/plans/${id}`, payload)
+  return data.data
+}
+
+export async function createPlan(payload) {
+  const { data } = await client.post('/admin/plans', payload)
   return data.data
 }
 

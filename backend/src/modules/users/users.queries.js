@@ -81,7 +81,7 @@ async function createInvitation(payload) {
   const [result] = await pool.query(
     `INSERT INTO invitations (tenant_id, email, role_code, token, expires_at, created_by)
      VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY), ?)`,
-    [payload.tenantId, payload.email, payload.roleCode, payload.createdBy]
+    [payload.tenantId, payload.email, payload.roleCode, token, payload.createdBy]
   )
   return {
     id: result.insertId,
