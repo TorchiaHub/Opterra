@@ -22,8 +22,9 @@ export async function refreshToken() {
 }
 
 export async function logout() {
+  const token = localStorage.getItem('tenderflow_refresh_token')
   try {
-    await client.post('/auth/logout')
+    await client.post('/auth/logout', { refreshToken: token })
   } finally {
     localStorage.removeItem('tenderflow_access_token')
     localStorage.removeItem('tenderflow_refresh_token')

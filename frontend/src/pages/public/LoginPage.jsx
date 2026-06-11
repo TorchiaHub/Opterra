@@ -1,11 +1,37 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../../components/Icon.jsx';
+import { useAuth } from '../../hooks/useAuth.js';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await login(email, password);
+      navigate(from, { replace: true });
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || 'Login failed';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -20,7 +46,14 @@ export default function LoginPage() {
             <p className={styles.subtitle}>Sign in to your Opterra account</p>
           </div>
 
-          <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+          {error && (
+            <div className={styles.errorBanner}>
+              <Icon name="alertCircle" size={16} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.field}>
               <label className={styles.label}>
                 <Icon name="mail" size={16} className={styles.labelIcon} />
@@ -29,8 +62,11 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className={styles.input}
                 placeholder="you@company.com"
+                disabled={loading}
               />
             </div>
 
@@ -43,8 +79,11 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className={styles.input}
                   placeholder="Enter your password"
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -75,9 +114,13 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <button type="submit" className={styles.submitBtn}>
-              <Icon name="arrowRight" size={18} />
-              Sign In
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? (
+                <Icon name="loader" size={18} className={styles.spinner} />
+              ) : (
+                <Icon name="arrowRight" size={18} />
+              )}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 

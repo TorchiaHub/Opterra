@@ -30,8 +30,7 @@ export function AuthProvider({ children }) {
       return
     }
     try {
-      const profile = await authApi.getMe()
-      setUser(profile)
+      await authApi.getMe()
     } catch {
       setUser(null)
     } finally {
