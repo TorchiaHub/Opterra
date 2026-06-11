@@ -521,8 +521,9 @@ Ogni modulo ha un file `{modulo}.queries.js` con funzioni isolate per le query S
 | Funzione | Parametri | Descrizione | SQL |
 |---|---|---|---|
 | `insertAuditLog` | `(payload)` | Inserisce entry audit | `INSERT INTO audit_logs (tenant_id, user_id, action, entity_type, entity_id, diff_json, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)` |
-| `getAuditLogsByTenant` | `(tenantId, filters)` | Log audit del tenant | `SELECT * FROM audit_logs WHERE tenant_id=? ... ORDER BY created_at DESC` |
-| `getGlobalAuditLogs` | `(filters)` | Log audit globali (superadmin) | `SELECT * FROM audit_logs ... ORDER BY created_at DESC` |
+| `getAuditLogsByTenant` | `(tenantId, filters, pagination)` | Log audit del tenant con paginazione e filtri (action, entityType, from, to) | `SELECT al.*, CONCAT(u.first_name,' ',u.last_name) as user_name FROM audit_logs al LEFT JOIN users u ON u.id=al.user_id WHERE al.tenant_id=? ... ORDER BY al.created_at DESC LIMIT ? OFFSET ?` |
+| `getGlobalAuditLogs` | `(filters, pagination)` | Log audit globali con join tenant (superadmin) | `SELECT al.*, CONCAT(u.first_name,' ',u.last_name) as user_name, t.name as tenant_name FROM audit_logs al LEFT JOIN users u ON u.id=al.user_id LEFT JOIN tenants t ON t.id=al.tenant_id WHERE 1=1 ... ORDER BY al.created_at DESC LIMIT ? OFFSET ?` |
+| `getAuditExportByTenant` | `(tenantId, filters)` | Export CSV log tenant | `SELECT al.created_at, al.action, al.entity_type, al.entity_id, CONCAT(u.first_name,' ',u.last_name) as user_name FROM audit_logs al LEFT JOIN users u ON u.id=al.user_id WHERE al.tenant_id=? ... ORDER BY al.created_at DESC` |
 
 ---
 
@@ -653,7 +654,44 @@ Ogni modulo ha un file `{modulo}.queries.js` con funzioni isolate per le query S
 
 ---
 
-## 4. Middleware
+## 4. Audit Log Integration
+
+Ogni operazione critica nei service chiama `audit.service.log(action, entityType, entityId, userId, tenantId, diff, req)`.
+
+| Modulo | Azione | Evento |
+|---|---|---|
+| Auth | Login | `auth.login` |
+| Auth | Registrazione tenant | `auth.register` |
+| Tenders | Creazione gara | `tender.created` |
+| Tenders | Modifica gara | `tender.updated` |
+| Tenders | Eliminazione gara | `tender.deleted` |
+| Tenders | Cambio stato | `tender.status_changed` |
+| Tenders | Assegnazione | `tender.assigned` |
+| Requirements | Aggiunta requisito | `requirement.created` |
+| Requirements | Aggiornamento item | `requirement_item.updated` |
+| Requirements | Eliminazione item | `requirement_item.deleted` |
+| Users | Cambio ruolo | `user.role_changed` |
+| Users | Rimozione utente | `user.removed` |
+| Users | Invito | `user.invited` |
+
+---
+
+## 5. Storage Pattern
+
+```
+/storage/{tenant_id}/{tender_id}/{document_id}/v{version}_{sanitized_filename}
+```
+
+- Upload via `POST /api/tenders/:id/documents` (multipart field: `file`)
+- MIME whitelist: pdf, doc, docx, xls, xlsx, zip, png, jpeg, txt, csv
+- Limite: 50 MB per file, 1024 MB per tenant (free plan)
+- SHA-256 checksum calcolato su ogni upload
+- Download solo via controller autenticato (`GET /api/tenders/documents/:docId/download`)
+- Riassegnazione file su disco con `fs.renameSync` dopo validazione
+
+---
+
+## 6. Middleware
 
 | Middleware | File | Funzione |
 |---|---|---|

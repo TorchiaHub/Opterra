@@ -1,11 +1,12 @@
 import * as queries from './requirements.queries.js'
 import logger from '../../config/logger.js'
+import { log as auditLog } from '../audit/audit.service.js'
 
 async function getRequirements(tenderId, tenantId) {
   return queries.getRequirementsByTender(tenderId, tenantId)
 }
 
-async function addRequirement(tenderId, payload, userId, tenantId) {
+async function addRequirement(tenderId, payload, userId, tenantId, req) {
   const requirementId = await queries.insertRequirement({
     tenantId,
     tenderId,
@@ -28,10 +29,11 @@ async function addRequirement(tenderId, payload, userId, tenantId) {
   }
 
   logger.info('Requirement added', { requirementId, tenderId, tenantId, userId })
+  auditLog('requirement.created', 'requirement', requirementId, userId, tenantId, { title: payload.title }, req)
   return queries.getRequirementsByTender(tenderId, tenantId)
 }
 
-async function updateItem(itemId, payload, tenantId, userId) {
+async function updateItem(itemId, payload, tenantId, userId, req) {
   const existing = await queries.getRequirementItemById(itemId, tenantId)
   if (!existing) {
     throw Object.assign(new Error('Item requisito non trovato.'), {
@@ -42,9 +44,10 @@ async function updateItem(itemId, payload, tenantId, userId) {
 
   await queries.updateRequirementItem(itemId, tenantId, payload)
   logger.info('Requirement item updated', { itemId, tenantId, userId })
+  auditLog('requirement_item.updated', 'requirement_item', itemId, userId, tenantId, { changes: Object.keys(payload) }, req)
 }
 
-async function deleteItem(itemId, tenantId) {
+async function deleteItem(itemId, tenantId, userId, req) {
   const existing = await queries.getRequirementItemById(itemId, tenantId)
   if (!existing) {
     throw Object.assign(new Error('Item requisito non trovato.'), {
@@ -55,6 +58,7 @@ async function deleteItem(itemId, tenantId) {
 
   await queries.softDeleteRequirementItem(itemId, tenantId)
   logger.info('Requirement item deleted', { itemId, tenantId })
+  auditLog('requirement_item.deleted', 'requirement_item', itemId, userId, tenantId, null, req)
 }
 
 export { getRequirements, addRequirement, updateItem, deleteItem }

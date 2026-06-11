@@ -1,5 +1,6 @@
 import * as queries from './users.queries.js'
 import logger from '../../config/logger.js'
+import { log as auditLog } from '../audit/audit.service.js'
 
 async function listUsers(tenantId, filters) {
   return queries.getUsersByTenant(tenantId, filters)
@@ -16,7 +17,7 @@ async function getUserDetail(userId, tenantId) {
   return user
 }
 
-async function changeRole(userId, roleCode, actorId, tenantId) {
+async function changeRole(userId, roleCode, actorId, tenantId, req) {
   const target = await queries.getUserById(userId, tenantId)
   if (!target) {
     throw Object.assign(new Error('Utente non trovato.'), {
@@ -34,9 +35,10 @@ async function changeRole(userId, roleCode, actorId, tenantId) {
 
   await queries.updateUserRole(userId, roleCode, tenantId)
   logger.info('User role updated', { userId, roleCode, actorId, tenantId })
+  auditLog('user.role_changed', 'user', userId, actorId, tenantId, { from: target.role_code, to: roleCode }, req)
 }
 
-async function removeUser(userId, actorId, tenantId) {
+async function removeUser(userId, actorId, tenantId, req) {
   const target = await queries.getUserById(userId, tenantId)
   if (!target) {
     throw Object.assign(new Error('Utente non trovato.'), {
@@ -55,10 +57,11 @@ async function removeUser(userId, actorId, tenantId) {
   const deleted = await queries.softDeleteUser(userId, tenantId)
   if (deleted) {
     logger.info('User removed', { userId, actorId, tenantId })
+    auditLog('user.removed', 'user', userId, actorId, tenantId, null, req)
   }
 }
 
-async function inviteUser(tenantId, email, roleCode, createdBy) {
+async function inviteUser(tenantId, email, roleCode, createdBy, req) {
   const result = await queries.createInvitation({
     tenantId,
     email,
@@ -66,6 +69,7 @@ async function inviteUser(tenantId, email, roleCode, createdBy) {
     createdBy,
   })
   logger.info('User invited', { email, roleCode, tenantId, invitedBy: createdBy })
+  auditLog('user.invited', 'invitation', result.id, createdBy, tenantId, { email, roleCode }, req)
   return result
 }
 

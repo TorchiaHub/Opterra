@@ -16,7 +16,7 @@ async function addRequirement(req, res, next) {
       })
     }
     const requirements = await service.addRequirement(
-      Number(req.params.id), req.body, req.user.userId, req.tenantId
+      Number(req.params.id), req.body, req.user.userId, req.tenantId, req
     )
     res.status(201).json({ success: true, data: requirements })
   } catch (err) {
@@ -32,7 +32,7 @@ async function addRequirement(req, res, next) {
 
 async function updateItem(req, res, next) {
   try {
-    await service.updateItem(Number(req.params.itemId), req.body, req.tenantId, req.user.userId)
+    await service.updateItem(Number(req.params.itemId), req.body, req.tenantId, req.user.userId, req)
     res.json({ success: true, data: { message: 'Item aggiornato.' } })
   } catch (err) {
     if (err.statusCode) {
@@ -47,7 +47,7 @@ async function updateItem(req, res, next) {
 
 async function deleteItem(req, res, next) {
   try {
-    await service.deleteItem(Number(req.params.itemId), req.tenantId)
+    await service.deleteItem(Number(req.params.itemId), req.tenantId, req.user.userId, req)
     res.json({ success: true, data: { message: 'Item eliminato.' } })
   } catch (err) {
     if (err.statusCode) {

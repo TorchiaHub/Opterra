@@ -35,7 +35,7 @@ async function changeRole(req, res, next) {
         error: { code: 'VALIDATION_ERROR', message: 'roleCode obbligatorio.' },
       })
     }
-    await service.changeRole(Number(req.params.id), roleCode, req.user.userId, req.tenantId)
+    await service.changeRole(Number(req.params.id), roleCode, req.user.userId, req.tenantId, req)
     res.json({ success: true, data: { message: 'Ruolo aggiornato.' } })
   } catch (err) {
     if (err.statusCode) {
@@ -50,7 +50,7 @@ async function changeRole(req, res, next) {
 
 async function removeUser(req, res, next) {
   try {
-    await service.removeUser(Number(req.params.id), req.user.userId, req.tenantId)
+    await service.removeUser(Number(req.params.id), req.user.userId, req.tenantId, req)
     res.json({ success: true, data: { message: 'Utente rimosso.' } })
   } catch (err) {
     if (err.statusCode) {
@@ -72,7 +72,7 @@ async function inviteUser(req, res, next) {
         error: { code: 'VALIDATION_ERROR', message: 'email e roleCode obbligatori.' },
       })
     }
-    const invitation = await service.inviteUser(req.tenantId, email, roleCode, req.user.userId)
+    const invitation = await service.inviteUser(req.tenantId, email, roleCode, req.user.userId, req)
     res.status(201).json({ success: true, data: invitation })
   } catch (err) {
     if (err.statusCode) {

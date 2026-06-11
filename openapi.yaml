@@ -558,6 +558,384 @@ paths:
         '200':
           description: Item eliminato
 
+  /api/tenders/{id}/documents:
+    get:
+      tags: [Documents]
+      summary: Lista documenti gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista documenti
+    post:
+      tags: [Documents]
+      summary: Upload file (multipart)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                title:
+                  type: string
+                documentType:
+                  type: string
+      responses:
+        '201':
+          description: File caricato
+
+  /api/tenders/{id}/documents/{docId}/versions:
+    post:
+      tags: [Documents]
+      summary: Aggiungi versione documento
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: docId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Versione aggiunta
+
+  /api/tenders/documents/{docId}/download:
+    get:
+      tags: [Documents]
+      summary: Download file
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: docId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File stream
+
+  /api/tenders/documents/{docId}/versions:
+    get:
+      tags: [Documents]
+      summary: Lista versioni documento
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: docId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista versioni
+
+  /api/tenders/documents/{docId}:
+    delete:
+      tags: [Documents]
+      summary: Soft delete documento
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: docId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Documento eliminato
+
+  /api/tenders/{id}/tasks:
+    get:
+      tags: [Tasks]
+      summary: Lista task gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista task
+    post:
+      tags: [Tasks]
+      summary: Crea task
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  type: string
+                dueAt:
+                  type: string
+                  format: date-time
+                assignedUserId:
+                  type: integer
+      responses:
+        '201':
+          description: Task creato
+
+  /api/tenders/tasks/{taskId}:
+    patch:
+      tags: [Tasks]
+      summary: Aggiorna task
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Task aggiornato
+    delete:
+      tags: [Tasks]
+      summary: Elimina task
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Task eliminato
+
+  /api/tenders/tasks/{taskId}/comments:
+    get:
+      tags: [Tasks]
+      summary: Commenti task
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista commenti
+    post:
+      tags: [Tasks]
+      summary: Aggiungi commento
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+      responses:
+        '201':
+          description: Commento aggiunto
+
+  /api/tenders/tasks/{taskId}/approvals:
+    get:
+      tags: [Tasks]
+      summary: Stato workflow approvazione
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Stato approvazione
+    post:
+      tags: [Tasks]
+      summary: Crea flusso approvazione
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                steps:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      approverUserId:
+                        type: integer
+      responses:
+        '201':
+          description: Flusso creato
+
+  /api/tenders/tasks/{taskId}/approvals/{stepId}/approve:
+    post:
+      tags: [Tasks]
+      summary: Approva step
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Step approvato
+
+  /api/tenders/tasks/{taskId}/approvals/{stepId}/reject:
+    post:
+      tags: [Tasks]
+      summary: Rifiuta step
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+      responses:
+        '200':
+          description: Step rifiutato
+
+  /api/audit:
+    get:
+      tags: [Audit]
+      summary: Log attività tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Log audit
+
+  /api/audit/export:
+    get:
+      tags: [Audit]
+      summary: Export CSV log tenant
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: File CSV
+
   /api/health:
     get:
       tags: [System]

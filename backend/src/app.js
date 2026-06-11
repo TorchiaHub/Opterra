@@ -16,6 +16,9 @@ import tenantsRoutes from './modules/tenants/tenants.routes.js'
 import usersRoutes from './modules/users/users.routes.js'
 import tendersRoutes from './modules/tenders/tenders.routes.js'
 import requirementsRoutes from './modules/requirements/requirements.routes.js'
+import documentsRoutes from './modules/documents/documents.routes.js'
+import tasksRoutes from './modules/tasks/tasks.routes.js'
+import auditRoutes from './modules/audit/audit.routes.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -43,6 +46,9 @@ app.use('/api/me/tenant', tenantsRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/tenders', tendersRoutes)
 app.use('/api/tenders', requirementsRoutes)
+app.use('/api/tenders', documentsRoutes)
+app.use('/api/tenders', tasksRoutes)
+app.use('/api/audit', auditRoutes)
 
 app.get('/api/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } })
