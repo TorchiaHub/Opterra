@@ -159,6 +159,404 @@ paths:
       responses:
         '200':
           description: Dati tenant
+    patch:
+      tags: [Tenant]
+      summary: Aggiorna profilo tenant
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Tenant aggiornato
+
+  /api/users:
+    get:
+      tags: [Users]
+      summary: Lista utenti del tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista utenti
+
+  /api/users/invite:
+    post:
+      tags: [Users]
+      summary: Invita utente via email
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                roleCode:
+                  type: string
+      responses:
+        '201':
+          description: Invito creato
+
+  /api/users/groups:
+    get:
+      tags: [Users]
+      summary: Lista gruppi
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista gruppi
+    post:
+      tags: [Users]
+      summary: Crea gruppo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Gruppo creato
+
+  /api/users/groups/{id}/members:
+    post:
+      tags: [Users]
+      summary: Aggiungi membro a gruppo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+      responses:
+        '201':
+          description: Membro aggiunto
+
+  /api/users/{id}/role:
+    patch:
+      tags: [Users]
+      summary: Cambia ruolo utente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roleCode:
+                  type: string
+      responses:
+        '200':
+          description: Ruolo aggiornato
+
+  /api/users/{id}:
+    delete:
+      tags: [Users]
+      summary: Rimuove utente dal tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Utente rimosso
+
+  /api/tenders/dashboard:
+    get:
+      tags: [Tenders]
+      summary: KPI dashboard gare
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Statistiche dashboard
+
+  /api/tenders:
+    get:
+      tags: [Tenders]
+      summary: Lista gare con filtri e paginazione
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista gare
+    post:
+      tags: [Tenders]
+      summary: Crea nuova gara
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, issuer, deadlineAt]
+              properties:
+                title:
+                  type: string
+                issuer:
+                  type: string
+                type:
+                  type: string
+                deadlineAt:
+                  type: string
+                  format: date-time
+                valueAmount:
+                  type: number
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Gara creata
+
+  /api/tenders/{id}:
+    get:
+      tags: [Tenders]
+      summary: Dettaglio gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dettaglio gara
+    patch:
+      tags: [Tenders]
+      summary: Aggiorna gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gara aggiornata
+    delete:
+      tags: [Tenders]
+      summary: Elimina gara (soft)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gara eliminata
+
+  /api/tenders/{id}/status:
+    patch:
+      tags: [Tenders]
+      summary: Cambia stato gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Stato aggiornato
+
+  /api/tenders/{id}/assign:
+    post:
+      tags: [Tenders]
+      summary: Assegna utenti/gruppi a gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assignments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      userId:
+                        type: integer
+                      groupId:
+                        type: integer
+                      assignmentType:
+                        type: string
+      responses:
+        '200':
+          description: Assegnazioni salvate
+
+  /api/tenders/{id}/requirements:
+    get:
+      tags: [Requirements]
+      summary: Lista requisiti gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Requisiti della gara
+    post:
+      tags: [Requirements]
+      summary: Aggiungi requisito a gara
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                      description:
+                        type: string
+                      itemType:
+                        type: string
+                      priority:
+                        type: string
+      responses:
+        '201':
+          description: Requisito aggiunto
+
+  /api/tenders/requirements/{itemId}:
+    patch:
+      tags: [Requirements]
+      summary: Aggiorna stato/note item requisito
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item aggiornato
+    delete:
+      tags: [Requirements]
+      summary: Elimina item requisito
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item eliminato
 
   /api/health:
     get:
