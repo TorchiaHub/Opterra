@@ -70,8 +70,28 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/chat', chatbotRoutes)
 app.use('/api/scraping', scrapingRoutes)
 
-app.get('/api/health', (_req, res) => {
-  res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } })
+app.get('/api/health', async (_req, res) => {
+  const checks = { database: false, storage: false }
+
+  try {
+    const pool = (await import('./config/db.js')).default
+    await pool.query('SELECT 1')
+    checks.database = true
+  } catch { /* fail */ }
+
+  try {
+    const fs = await import('fs')
+    const storagePath = env.storage.path
+    if (fs.existsSync(storagePath)) {
+      checks.storage = true
+    }
+  } catch { /* fail */ }
+
+  const allOk = checks.database && checks.storage
+  res.status(allOk ? 200 : 503).json({
+    success: allOk,
+    data: { status: allOk ? 'ok' : 'degraded', checks, timestamp: new Date().toISOString() },
+  })
 })
 
 app.use(errorHandler)
