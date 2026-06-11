@@ -936,6 +936,244 @@ paths:
         '200':
           description: File CSV
 
+  /api/ai/extract-requirements:
+    post:
+      tags: [AI]
+      summary: Estrae requisiti da file bando
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                tenderId:
+                  type: integer
+      responses:
+        '200':
+          description: Requisiti estratti
+
+  /api/ai/summary:
+    post:
+      tags: [AI]
+      summary: Sintesi bando in markdown
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Riassunto generato
+
+  /api/ai/compliance-check:
+    post:
+      tags: [AI]
+      summary: Gap analysis checklist vs documenti
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Report compliance
+
+  /api/ai/go-nogo:
+    post:
+      tags: [AI]
+      summary: Score e raccomandazione partecipazione
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Score calcolato
+
+  /api/ai/qa:
+    post:
+      tags: [AI]
+      summary: Q&A RAG sui documenti gara
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Risposta generata
+
+  /api/ai/draft:
+    post:
+      tags: [AI]
+      summary: Bozza sezione risposta
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Bozza generata
+
+  /api/chat/sessions:
+    get:
+      tags: [Chatbot]
+      summary: Lista sessioni chat
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista sessioni
+    post:
+      tags: [Chatbot]
+      summary: Nuova sessione
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Sessione creata
+
+  /api/chat/sessions/{id}/messages:
+    get:
+      tags: [Chatbot]
+      summary: Messaggi sessione
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista messaggi
+    post:
+      tags: [Chatbot]
+      summary: Invia messaggio (esegue azioni)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Risposta generata
+
+  /api/scraping/sources:
+    get:
+      tags: [Scraping]
+      summary: Lista sorgenti configurate
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista sorgenti
+    post:
+      tags: [Scraping]
+      summary: Aggiungi sorgente
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                sourceType:
+                  type: string
+                baseUrl:
+                  type: string
+      responses:
+        '201':
+          description: Sorgente aggiunta
+
+  /api/scraping/sources/{id}:
+    delete:
+      tags: [Scraping]
+      summary: Rimuovi sorgente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sorgente rimossa
+
+  /api/scraping/tenders:
+    get:
+      tags: [Scraping]
+      summary: Lista bandi trovati
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: minScore
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Lista bandi
+
+  /api/scraping/tenders/{id}/status:
+    patch:
+      tags: [Scraping]
+      summary: Cambia stato bando
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Stato aggiornato
+
+  /api/scraping/tenders/{id}/convert:
+    post:
+      tags: [Scraping]
+      summary: Converti bando in gara reale
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gara creata
+
   /api/health:
     get:
       tags: [System]

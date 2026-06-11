@@ -494,27 +494,32 @@ Ogni modulo ha un file `{modulo}.queries.js` con funzioni isolate per le query S
 
 | Funzione | Parametri | Descrizione | SQL |
 |---|---|---|---|
-| `logAiRequest` | `(payload)` | Logga richiesta AI | `INSERT INTO ai_requests (tenant_id, user_id, tender_id, request_type, model_name, prompt_tokens, completion_tokens, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)` |
-| `getMonthlyAiUsage` | `(tenantId, yearMonth)` | Utilizzo AI mensile per tenant | `SELECT COUNT(*) as count, SUM(prompt_tokens+completion_tokens) as total_tokens FROM ai_requests WHERE tenant_id=? AND DATE_FORMAT(created_at, '%Y-%m')=? AND status='success'` |
+| `logAiRequest` | `(payload)` | Logga richiesta AI con esito | `INSERT INTO ai_requests (tenant_id, user_id, tender_id, request_type, model_name, prompt_tokens, completion_tokens, status, error_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)` |
+| `getMonthlyAiUsage` | `(tenantId, yearMonth)` | Utilizzo AI mensile per tenant | `SELECT COUNT(*) as count, COALESCE(SUM(prompt_tokens+completion_tokens),0) as total_tokens FROM ai_requests WHERE tenant_id=? AND DATE_FORMAT(created_at, '%Y-%m')=? AND status='success'` |
 
 ### 2.9 `scraping.queries.js`
 
 | Funzione | Parametri | Descrizione | SQL |
 |---|---|---|---|
-| `getSourcesByTenant` | `(tenantId)` | Sorgenti scraping del tenant | `SELECT * FROM scraping_sources WHERE tenant_id=?` |
-| `createScrapingJob` | `(payload)` | Crea job scraping | `INSERT INTO scraping_jobs (tenant_id, source_id, status) VALUES (?, ?, 'queued')` |
-| `insertScrapedTenders` | `(items)` | Inserisce bandi scrapati | `INSERT INTO scraped_tenders (tenant_id, source_id, external_id, ...) VALUES ... ON DUPLICATE KEY UPDATE ...` |
-| `getScrapedTendersByTenant` | `(tenantId, filters)` | Lista bandi scrapati | `SELECT * FROM scraped_tenders WHERE tenant_id=? ... ORDER BY ...` |
-| `convertScrapedTenderToTender` | `(scrapedId, tenantId, trx)` | Converte bando scrapato in gara reale | `INSERT INTO tenders SELECT ... FROM scraped_tenders WHERE id=? AND tenant_id=? ... UPDATE scraped_tenders SET converted_tender_id=?, status='saved' WHERE id=?` |
+| `getSourcesByTenant` | `(tenantId)` | Sorgenti scraping del tenant | `SELECT * FROM scraping_sources WHERE tenant_id=? ORDER BY name ASC` |
+| `createSource` | `(payload)` | Crea nuova sorgente scraping | `INSERT INTO scraping_sources (tenant_id, name, source_type, base_url, config_json, is_active) VALUES (?, ?, ?, ?, ?, ?)` |
+| `deleteSource` | `(sourceId, tenantId)` | Elimina sorgente | `DELETE FROM scraping_sources WHERE id=? AND tenant_id=?` |
+| `createScrapingJob` | `(payload)` | Crea job scraping in stato queued | `INSERT INTO scraping_jobs (tenant_id, source_id, status) VALUES (?, ?, 'queued')` |
+| `insertScrapedTenders` | `(items)` | Inserisce bandi scrapati con deduplica per source_id+external_id | `INSERT INTO scraped_tenders (...) VALUES ... ON DUPLICATE KEY UPDATE title=VALUES(title), updated_at=NOW()` |
+| `getScrapedTendersByTenant` | `(tenantId, filters)` | Lista bandi con filtri (status, search, minScore), join con source | `SELECT st.*, ss.name as source_name FROM scraped_tenders st JOIN scraping_sources ss ON ss.id=st.source_id WHERE st.tenant_id=? ... ORDER BY st.created_at DESC` |
+| `updateScrapedTenderStatus` | `(scrapedId, status, tenantId)` | Cambia stato bando (new/saved/dismissed) | `UPDATE scraped_tenders SET status=? WHERE id=? AND tenant_id=?` |
+| `convertScrapedTenderToTender` | `(scrapedId, tenantId, userId, trx)` | Converte bando in gara reale + aggiorna status | `INSERT INTO tenders SELECT ... FROM scraped_tenders WHERE id=?` + `UPDATE scraped_tenders SET converted_tender_id=?, status='saved'` |
 
 ### 2.10 `chat.queries.js`
 
 | Funzione | Parametri | Descrizione | SQL |
 |---|---|---|---|
-| `getChatSessions` | `(userId, tenantId)` | Sessioni chat dell'utente | `SELECT * FROM chat_sessions WHERE user_id=? AND tenant_id=? ORDER BY updated_at DESC` |
+| `getChatSessions` | `(userId, tenantId)` | Sessioni chat utente con anteprima ultimo messaggio | `SELECT cs.*, (SELECT message_text FROM chat_messages WHERE session_id=cs.id ORDER BY created_at DESC LIMIT 1) as last_message FROM chat_sessions cs WHERE cs.user_id=? AND cs.tenant_id=? ORDER BY cs.updated_at DESC` |
 | `createChatSession` | `(payload)` | Nuova sessione chat | `INSERT INTO chat_sessions (tenant_id, user_id, title, context_type, context_id) VALUES (?, ?, ?, ?, ?)` |
-| `getMessagesBySession` | `(sessionId, tenantId)` | Messaggi di una sessione | `SELECT * FROM chat_messages WHERE session_id=? AND tenant_id=? ORDER BY created_at ASC` |
-| `insertChatMessage` | `(payload)` | Inserisce messaggio | `INSERT INTO chat_messages (tenant_id, session_id, sender_type, message_text, tool_call_json) VALUES (?, ?, ?, ?, ?)` |
+| `getMessagesBySession` | `(sessionId, tenantId)` | Messaggi sessione ordinati per data | `SELECT * FROM chat_messages WHERE session_id=? AND tenant_id=? ORDER BY created_at ASC` |
+| `insertChatMessage` | `(payload)` | Inserisce messaggio utente/assistant/system | `INSERT INTO chat_messages (tenant_id, session_id, sender_type, message_text, tool_call_json) VALUES (?, ?, ?, ?, ?)` |
+| `getSessionById` | `(sessionId, tenantId)` | Verifica esistenza e proprietario sessione | `SELECT * FROM chat_sessions WHERE id=? AND tenant_id=? LIMIT 1` |
+| `updateSessionTimestamp` | `(sessionId)` | Aggiorna updated_at della sessione | `UPDATE chat_sessions SET updated_at=NOW() WHERE id=?` |
 
 ### 2.11 `audit.queries.js`
 
@@ -673,6 +678,12 @@ Ogni operazione critica nei service chiama `audit.service.log(action, entityType
 | Users | Cambio ruolo | `user.role_changed` |
 | Users | Rimozione utente | `user.removed` |
 | Users | Invito | `user.invited` |
+| AI | Richiesta AI completata | `ai.extract-requirements`, `ai.summary`, `ai.compliance-check`, `ai.go-nogo`, `ai.qa`, `ai.draft` |
+| Chatbot | Messaggio inviato | `chat.message_sent` |
+| Scraping | Sorgente creata | `scraping.source_created` |
+| Scraping | Sorgente eliminata | `scraping.source_deleted` |
+| Scraping | Stato bando cambiato | `scraping.tender_status_changed` |
+| Scraping | Bando convertito in gara | `scraping.tender_converted` |
 
 ---
 
