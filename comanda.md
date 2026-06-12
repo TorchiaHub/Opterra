@@ -129,6 +129,70 @@ npm run seed      # piani, ruoli, superadmin, dati demo (3 utenti, 9 gare)
 
 ---
 
+## Rotte API — totale: **74**
+
+> 🔓 = pubblica · 🔑 = autenticata (qualsiasi ruolo) · 👔 = solo manager+ · 🛡️ = solo superadmin
+
+### Auth — `/api/auth` (5) — [auth.routes.js](backend/src/modules/auth/auth.routes.js)
+| Metodo | Rotta | Accesso |
+|---|---|---|
+| POST | `/api/auth/register` | 🔓 |
+| POST | `/api/auth/login` | 🔓 |
+| POST | `/api/auth/refresh` | 🔓 |
+| POST | `/api/auth/logout` | 🔑 |
+| GET | `/api/auth/me` | 🔑 |
+
+### Tenant — `/api/me/tenant` (2) — [tenants.routes.js](backend/src/modules/tenants/tenants.routes.js)
+| GET | `/api/me/tenant` | 🔑 |
+|---|---|---|
+| PATCH | `/api/me/tenant` | 👔 |
+
+### Utenti e gruppi — `/api/users` (8) — [users.routes.js](backend/src/modules/users/users.routes.js) — tutte 👔
+GET `/`, GET `/groups`, POST `/`, POST `/invite`, POST `/groups`, POST `/groups/:id/members`, PATCH `/:id/role`, DELETE `/:id`
+
+### Gare — `/api/tenders` (8) — [tenders.routes.js](backend/src/modules/tenders/tenders.routes.js)
+| Metodo | Rotta | Accesso |
+|---|---|---|
+| GET | `/api/tenders/dashboard` | 🔑 |
+| GET | `/api/tenders` | 🔑 |
+| GET | `/api/tenders/:id` | 🔑 |
+| POST | `/api/tenders` | 👔 |
+| PATCH | `/api/tenders/:id` | 👔 |
+| PATCH | `/api/tenders/:id/status` | 👔 |
+| POST | `/api/tenders/:id/assign` | 👔 |
+| DELETE | `/api/tenders/:id` | 👔 |
+
+### Requisiti — su `/api/tenders` (4) — [requirements.routes.js](backend/src/modules/requirements/requirements.routes.js)
+GET `/:id/requirements` 🔑 · POST `/:id/requirements` 👔 · PATCH `/requirements/:itemId` 🔑 · DELETE `/requirements/:itemId` 👔
+
+### Documenti — su `/api/tenders` (6) — [documents.routes.js](backend/src/modules/documents/documents.routes.js)
+GET `/:id/documents` 🔑 · POST `/:id/documents` 🔑 · POST `/:id/documents/:docId/versions` 🔑 · GET `/documents/:docId/download` 🔑 · GET `/documents/:docId/versions` 🔑 · DELETE `/documents/:docId` 👔
+
+### Task e approvazioni — su `/api/tenders` (10) — [tasks.routes.js](backend/src/modules/tasks/tasks.routes.js)
+GET `/:id/tasks` 🔑 · POST `/:id/tasks` 👔 · PATCH `/tasks/:taskId` 🔑 · DELETE `/tasks/:taskId` 👔 · POST `/tasks/:taskId/comments` 🔑 · GET `/tasks/:taskId/comments` 🔑 · GET `/tasks/:taskId/approvals` 🔑 · POST `/tasks/:taskId/approvals` 👔 · POST `/tasks/:taskId/approvals/:stepId/approve` 🔑 · POST `/tasks/:taskId/approvals/:stepId/reject` 🔑
+
+### Audit — `/api/audit` (2) — [audit.routes.js](backend/src/modules/audit/audit.routes.js) — tutte 👔
+GET `/` · GET `/export`
+
+### AI — `/api/ai` (6) — [ai.routes.js](backend/src/modules/ai/ai.routes.js)
+POST `/extract-requirements` 🔑 · POST `/compliance-check` 🔑 · POST `/summary` 🔑 · POST `/qa` 🔑 · POST `/draft` 🔑 · POST `/go-nogo` 👔
+
+### Chatbot — `/api/chat` (4) — [chatbot.routes.js](backend/src/modules/chatbot/chatbot.routes.js) — tutte 🔑
+GET `/sessions` · POST `/sessions` · GET `/sessions/:id/messages` · POST `/sessions/:id/messages`
+
+### Scraping bandi — `/api/scraping` (6) — [scraping.routes.js](backend/src/modules/scraping/scraping.routes.js)
+GET `/sources` 👔 · POST `/sources` 👔 · DELETE `/sources/:id` 👔 · GET `/tenders` 🔑 · PATCH `/tenders/:id/status` 🔑 · POST `/tenders/:id/convert` 👔
+
+### Admin — `/api/admin` (12) — [admin.routes.js](backend/src/modules/admin/admin.routes.js) — tutte 🛡️
+GET `/tenants` · GET `/tenants/:id` · PATCH `/tenants/:id` · PATCH `/tenants/:id/status` · PATCH `/tenants/:id/plan` · GET `/tenants/:id/usage` · GET `/users` · PATCH `/users/:id/role` · GET `/plans` · POST `/plans` · PATCH `/plans/:id` · GET `/audit`
+
+### Sistema (1) — [app.js](backend/src/app.js)
+GET `/api/health` 🔓
+
+**Riepilogo:** Auth 5 + Tenant 2 + Utenti 8 + Gare 8 + Requisiti 4 + Documenti 6 + Task 10 + Audit 2 + AI 6 + Chatbot 4 + Scraping 6 + Admin 12 + Health 1 = **74 rotte**
+
+---
+
 ## Avvio rapido in locale
 
 ```bash
