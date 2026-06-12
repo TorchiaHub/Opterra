@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
+import { UIContext } from '../../context/UIContext'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
@@ -16,6 +17,7 @@ import styles from './TenantsPage.module.css'
 
 export function TenantsPage() {
   const { t } = useTranslation()
+  const { addToast } = useContext(UIContext)
   const [tenants, setTenants] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -151,7 +153,7 @@ export function TenantsPage() {
         title={t('admin.tenants.title')}
         subtitle={t('admin.tenants.subtitle')}
         actions={
-          <SubmitButton variant="primary" onClick={() => {}}>
+          <SubmitButton variant="primary" onClick={() => addToast('I nuovi tenant si creano dalla registrazione pubblica: /register. La creazione manuale da pannello admin arriverà in una prossima versione.', 'info', 6000)}>
             <Icon name="plus" size={16} />
             <span>{t('admin.tenants.newTenant')}</span>
           </SubmitButton>

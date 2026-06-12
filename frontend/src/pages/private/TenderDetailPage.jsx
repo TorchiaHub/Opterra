@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { UIContext } from '../../context/UIContext'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { SectionCard } from '../../components/cards/SectionCard'
@@ -16,12 +17,13 @@ import {
 } from '../../utils/constants'
 import { formatCurrency } from '../../utils/format'
 import { formatDate } from '../../utils/date'
-import { getTenderById } from '../../api/tenders.api'
+import { getTenderById, updateTender, updateTenderStatus } from '../../api/tenders.api'
 import { getTasks, createTask, updateTask, deleteTask } from '../../api/tasks.api'
 import { getRequirementsByTender } from '../../api/requirements.api'
-import { getDocumentsByTender } from '../../api/documents.api'
+import { getDocumentsByTender, uploadDocument, downloadDocument, deleteDocument } from '../../api/documents.api'
 import { usePermissions } from '../../hooks/usePermissions'
 import styles from './TenderDetailPage.module.css'
+import listStyles from './TendersListPage.module.css'
 
 function normalizeTender(row) {
   if (!row) return null
@@ -61,6 +63,14 @@ export function TenderDetailPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { canManageTenders } = usePermissions()
+  const { addToast } = useContext(UIContext)
+  const fileInputRef = useRef(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editForm, setEditForm] = useState(null)
+  const [editError, setEditError] = useState(null)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [confirmDeleteDocId, setConfirmDeleteDocId] = useState(null)
   const [tender, setTender] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -142,8 +152,9 @@ export function TenderDetailPage() {
       setTasks(prev => [...prev, normalizeTask(created)])
       setNewTask({ title: '', priority: 'medium', assignee: '', dueAt: '' })
       setShowNewTask(false)
-    } catch {
-      // silently fail
+      addToast('Task creato.', 'success')
+    } catch (err) {
+      addToast(err.response?.data?.error?.message || 'Errore durante la creazione del task.', 'error')
     }
   }
 
@@ -151,8 +162,8 @@ export function TenderDetailPage() {
     try {
       const updated = await updateTask(id, taskId, payload)
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...normalizeTask(updated) } : t))
-    } catch {
-      // silently fail
+    } catch (err) {
+      addToast(err.response?.data?.error?.message || 'Errore durante l\'aggiornamento del task.', 'error')
     }
   }
 
@@ -161,8 +172,10 @@ export function TenderDetailPage() {
       await deleteTask(id, taskId)
       setTasks(prev => prev.filter(t => t.id !== taskId))
       setConfirmDeleteId(null)
-    } catch {
-      // silently fail
+      addToast('Task eliminato.', 'success')
+    } catch (err) {
+      setConfirmDeleteId(null)
+      addToast(err.response?.data?.error?.message || 'Errore durante l\'eliminazione del task.', 'error')
     }
   }
 
@@ -187,6 +200,106 @@ export function TenderDetailPage() {
   function handleCancelEdit() {
     setEditingId(null)
     setEditingTitle('')
+  }
+
+  function openEditModal() {
+    setEditError(null)
+    setEditForm({
+      title: tender.title || '',
+      issuer: tender.issuer === '—' ? '' : (tender.issuer || ''),
+      type: tender.type || 'tender',
+      status: tender.status || 'draft',
+      valueAmount: tender.valueAmount != null ? String(tender.valueAmount) : '',
+      deadlineAt: tender.deadlineAt ? String(tender.deadlineAt).substring(0, 10) : '',
+      description: tender.description || '',
+    })
+    setShowEditModal(true)
+  }
+
+  async function handleSaveTender() {
+    setEditError(null)
+    if (!editForm.title.trim()) {
+      setEditError('Il titolo è obbligatorio.')
+      return
+    }
+    setSavingEdit(true)
+    try {
+      await updateTender(id, {
+        title: editForm.title.trim(),
+        issuer: editForm.issuer.trim() || undefined,
+        type: editForm.type,
+        valueAmount: editForm.valueAmount ? Number(editForm.valueAmount) : undefined,
+        deadlineAt: editForm.deadlineAt || undefined,
+        description: editForm.description.trim() || undefined,
+      })
+      if (editForm.status !== tender.status) {
+        await updateTenderStatus(id, editForm.status)
+      }
+      const fresh = await getTenderById(id)
+      setTender(normalizeTender(fresh))
+      setShowEditModal(false)
+      addToast('Gara aggiornata con successo.', 'success')
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || 'Errore durante il salvataggio della gara.'
+      setEditError(msg)
+      addToast(msg, 'error')
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  async function handleFileSelected(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('title', file.name)
+      await uploadDocument(id, formData)
+      const rows = await getDocumentsByTender(id)
+      setDocuments((Array.isArray(rows) ? rows : []).map(d => ({
+        id: d.id,
+        name: d.title || d.original_filename || '—',
+        size: formatBytes(d.size_bytes),
+        uploadedBy: d.uploaded_by_name || '—',
+        uploadedAt: d.created_at,
+      })))
+      addToast(`Documento "${file.name}" caricato.`, 'success')
+    } catch (err) {
+      addToast(err.response?.data?.error?.message || 'Errore durante il caricamento del documento (formati ammessi: PDF, Word, Excel, ZIP, immagini, testo).', 'error')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleDownloadDoc(doc) {
+    try {
+      const blob = await downloadDocument(doc.id)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = doc.name
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      addToast('Errore durante il download del documento.', 'error')
+    }
+  }
+
+  async function handleDeleteDoc(docId) {
+    try {
+      await deleteDocument(docId)
+      setDocuments(prev => prev.filter(d => d.id !== docId))
+      setConfirmDeleteDocId(null)
+      addToast('Documento eliminato.', 'success')
+    } catch (err) {
+      setConfirmDeleteDocId(null)
+      addToast(err.response?.data?.error?.message || 'Errore durante l\'eliminazione del documento.', 'error')
+    }
   }
 
   if (loading) {
@@ -272,7 +385,7 @@ export function TenderDetailPage() {
               variant={TENDER_STATUS_COLORS[tender.status]}
             />
             {canManageTenders && (
-              <button className={styles.iconBtn} onClick={() => {}} title={t('private.tenderDetail.editButton')}>
+              <button className={styles.iconBtn} onClick={openEditModal} title={t('private.tenderDetail.editButton')}>
                 <Icon name="edit" size={18} />
               </button>
             )}
@@ -417,10 +530,19 @@ export function TenderDetailPage() {
 
       {activeTab === 2 && (
         <SectionCard title={t('private.tenderDetail.tabs.documents')} actions={
-          <SubmitButton variant="secondary" onClick={() => {}} className={styles.uploadBtn}>
-            <Icon name="upload" size={16} />
-            <span>{t('private.tenderDetail.upload')}</span>
-          </SubmitButton>
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              style={{ display: 'none' }}
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.txt,.csv"
+              onChange={handleFileSelected}
+            />
+            <SubmitButton variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={uploading} className={styles.uploadBtn}>
+              <Icon name="upload" size={16} />
+              <span>{uploading ? 'Caricamento…' : t('private.tenderDetail.upload')}</span>
+            </SubmitButton>
+          </>
         }>
           <div className={styles.documentsList}>
             {documents.length === 0 ? (
@@ -438,12 +560,14 @@ export function TenderDetailPage() {
                     </span>
                   </div>
                   <div className={styles.docActions}>
-                    <button className={styles.docActionBtn} title={t('private.tenderDetail.download')}>
+                    <button className={styles.docActionBtn} onClick={() => handleDownloadDoc(doc)} title={t('private.tenderDetail.download')}>
                       <Icon name="download" size={16} />
                     </button>
-                    <button className={styles.docActionBtn} title={t('private.tenderDetail.deleteDoc')}>
-                      <Icon name="trash" size={16} />
-                    </button>
+                    {canManageTenders && (
+                      <button className={styles.docActionBtn} onClick={() => setConfirmDeleteDocId(doc.id)} title={t('private.tenderDetail.deleteDoc')}>
+                        <Icon name="trash" size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -595,6 +719,113 @@ export function TenderDetailPage() {
         onCancel={() => setConfirmDeleteId(null)}
         danger
       />
+
+      <ConfirmModal
+        open={confirmDeleteDocId !== null}
+        title="Elimina documento"
+        message="Vuoi eliminare definitivamente questo documento?"
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => handleDeleteDoc(confirmDeleteDocId)}
+        onCancel={() => setConfirmDeleteDocId(null)}
+        danger
+      />
+
+      {showEditModal && editForm && (
+        <div className={listStyles.modalOverlay} onClick={() => setShowEditModal(false)}>
+          <div className={listStyles.modal} onClick={e => e.stopPropagation()}>
+            <div className={listStyles.modalHeader}>
+              <h2 className={listStyles.modalTitle}>Modifica gara</h2>
+              <button className={listStyles.modalClose} onClick={() => setShowEditModal(false)}>
+                <Icon name="x" size={20} />
+              </button>
+            </div>
+            <div className={listStyles.modalBody}>
+              {editError && (
+                <div style={{ background: 'rgba(220,53,69,0.12)', color: '#dc3545', border: '1px solid rgba(220,53,69,0.35)', borderRadius: 8, padding: '10px 14px', fontSize: '0.9rem' }}>
+                  {editError}
+                </div>
+              )}
+              <label className={listStyles.modalLabel}>
+                <span>{t('private.tenders.form.title')} *</span>
+                <input
+                  className={listStyles.modalInput}
+                  value={editForm.title}
+                  onChange={e => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </label>
+              <label className={listStyles.modalLabel}>
+                <span>{t('private.tenders.form.issuer')}</span>
+                <input
+                  className={listStyles.modalInput}
+                  value={editForm.issuer}
+                  onChange={e => setEditForm(prev => ({ ...prev, issuer: e.target.value }))}
+                />
+              </label>
+              <label className={listStyles.modalLabel}>
+                <span>{t('private.tenders.form.type')}</span>
+                <select
+                  className={listStyles.modalInput}
+                  value={editForm.type}
+                  onChange={e => setEditForm(prev => ({ ...prev, type: e.target.value }))}
+                >
+                  <option value="rfp">{t('tenderTypes.rfp')}</option>
+                  <option value="rfq">{t('tenderTypes.rfq')}</option>
+                  <option value="tender">{t('tenderTypes.tender')}</option>
+                  <option value="bando">{t('tenderTypes.bando')}</option>
+                </select>
+              </label>
+              <label className={listStyles.modalLabel}>
+                <span>Stato</span>
+                <select
+                  className={listStyles.modalInput}
+                  value={editForm.status}
+                  onChange={e => setEditForm(prev => ({ ...prev, status: e.target.value }))}
+                >
+                  {['draft', 'active', 'submitted', 'won', 'lost', 'cancelled'].map(s => (
+                    <option key={s} value={s}>{t(`status.${s}`)}</option>
+                  ))}
+                </select>
+              </label>
+              <label className={listStyles.modalLabel}>
+                <span>{t('private.tenders.form.deadline')}</span>
+                <input
+                  className={listStyles.modalInput}
+                  type="date"
+                  value={editForm.deadlineAt}
+                  onChange={e => setEditForm(prev => ({ ...prev, deadlineAt: e.target.value }))}
+                />
+              </label>
+              <label className={listStyles.modalLabel}>
+                <span>{t('private.tenders.form.value')}</span>
+                <input
+                  className={listStyles.modalInput}
+                  type="number"
+                  value={editForm.valueAmount}
+                  onChange={e => setEditForm(prev => ({ ...prev, valueAmount: e.target.value }))}
+                />
+              </label>
+              <label className={listStyles.modalLabel}>
+                <span>{t('private.tenders.form.description')}</span>
+                <textarea
+                  className={listStyles.modalTextarea}
+                  value={editForm.description}
+                  onChange={e => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                />
+              </label>
+            </div>
+            <div className={listStyles.modalFooter}>
+              <SubmitButton variant="secondary" onClick={() => setShowEditModal(false)}>
+                {t('common.cancel')}
+              </SubmitButton>
+              <SubmitButton variant="primary" onClick={handleSaveTender} disabled={savingEdit}>
+                {savingEdit ? t('common.loading') : t('common.save')}
+              </SubmitButton>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeTab === 4 && (
         <SectionCard title={t('private.tenderDetail.aiInsights')}>

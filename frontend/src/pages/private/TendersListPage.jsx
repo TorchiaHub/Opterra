@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { UIContext } from '../../context/UIContext'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
@@ -27,6 +28,7 @@ export function TendersListPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { canManageTenders } = usePermissions()
+  const { addToast } = useContext(UIContext)
   const [tenders, setTenders] = useState([])
   const [meta, setMeta] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -42,6 +44,7 @@ export function TendersListPage() {
     title: '', issuer: '', type: '', deadlineAt: '', valueAmount: '', description: '',
   })
   const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState(null)
 
   useEffect(() => {
     const fetchTenders = async () => {
@@ -141,24 +144,35 @@ export function TendersListPage() {
   ]
 
   async function handleCreateTender() {
-    if (!newTender.title.trim() || !newTender.issuer.trim()) return
+    setCreateError(null)
+    const missing = []
+    if (!newTender.title.trim()) missing.push('Titolo')
+    if (!newTender.issuer.trim()) missing.push('Ente')
+    if (!newTender.deadlineAt) missing.push('Scadenza')
+    if (missing.length > 0) {
+      setCreateError(`Campi obbligatori mancanti: ${missing.join(', ')}.`)
+      return
+    }
     setCreating(true)
     try {
       await createTender({
         title: newTender.title.trim(),
         issuer: newTender.issuer.trim(),
-        type: newTender.type || undefined,
-        deadlineAt: newTender.deadlineAt || undefined,
+        type: newTender.type || 'tender',
+        deadlineAt: newTender.deadlineAt,
         valueAmount: newTender.valueAmount ? Number(newTender.valueAmount) : undefined,
         description: newTender.description.trim() || undefined,
       })
       setShowCreateModal(false)
       setNewTender({ title: '', issuer: '', type: '', deadlineAt: '', valueAmount: '', description: '' })
+      addToast('Gara creata con successo.', 'success')
       const result = await getTenders({ page, pageSize: 20, search, status: statusFilter, type: typeFilter })
       setTenders(result.items ?? result)
       setMeta(result.meta ?? null)
-    } catch {
-      // silently fail
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || 'Errore durante la creazione della gara.'
+      setCreateError(msg)
+      addToast(msg, 'error')
     } finally {
       setCreating(false)
     }
@@ -204,7 +218,7 @@ export function TendersListPage() {
         subtitle={t('private.tenders.subtitle')}
         actions={
           canManageTenders ? (
-            <SubmitButton variant="primary" onClick={() => setShowCreateModal(true)} className={styles.newBtn}>
+            <SubmitButton variant="primary" onClick={() => { setCreateError(null); setShowCreateModal(true) }} className={styles.newBtn}>
               <Icon name="plus" size={16} />
               <span>{t('private.tenders.newTender')}</span>
             </SubmitButton>
@@ -256,8 +270,13 @@ export function TendersListPage() {
               </button>
             </div>
             <div className={styles.modalBody}>
+              {createError && (
+                <div style={{ background: 'rgba(220,53,69,0.12)', color: '#dc3545', border: '1px solid rgba(220,53,69,0.35)', borderRadius: 8, padding: '10px 14px', fontSize: '0.9rem' }}>
+                  {createError}
+                </div>
+              )}
               <label className={styles.modalLabel}>
-                <span>{t('private.tenders.form.title')}</span>
+                <span>{t('private.tenders.form.title')} *</span>
                 <input
                   className={styles.modalInput}
                   value={newTender.title}
@@ -266,7 +285,7 @@ export function TendersListPage() {
                 />
               </label>
               <label className={styles.modalLabel}>
-                <span>{t('private.tenders.form.issuer')}</span>
+                <span>{t('private.tenders.form.issuer')} *</span>
                 <input
                   className={styles.modalInput}
                   value={newTender.issuer}
@@ -289,7 +308,7 @@ export function TendersListPage() {
                 </select>
               </label>
               <label className={styles.modalLabel}>
-                <span>{t('private.tenders.form.deadline')}</span>
+                <span>{t('private.tenders.form.deadline')} *</span>
                 <input
                   className={styles.modalInput}
                   type="date"

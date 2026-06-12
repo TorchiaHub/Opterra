@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
+import { UIContext } from '../../context/UIContext'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { SectionCard } from '../../components/cards/SectionCard'
@@ -24,6 +25,7 @@ const defaultNotifications = {
 export function SettingsPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const { addToast } = useContext(UIContext)
   const [activeTab, setActiveTab] = useState('profile')
   const [profile, setProfile] = useState({
     firstName: user?.firstName || user?.name?.split(' ')[0] || '',
@@ -371,7 +373,7 @@ export function SettingsPage() {
                     <span className={styles.securityLabel}>{t('private.settings.security.password.label')}</span>
                     <span className={styles.securityDesc}>{t('private.settings.security.password.description')}</span>
                   </div>
-                  <SubmitButton variant="secondary" onClick={() => {}}>
+                  <SubmitButton variant="secondary" onClick={() => addToast('Il cambio password sarà disponibile in una prossima versione. Contatta il tuo manager per il reset.', 'info')}>
                     <Icon name="lock" size={16} />
                     <span>{t('private.settings.security.password.button')}</span>
                   </SubmitButton>
@@ -390,7 +392,7 @@ export function SettingsPage() {
                     <span className={styles.securityLabel}>{t('private.settings.security.sessions.label')}</span>
                     <span className={styles.securityDesc}>{t('private.settings.security.sessions.description')}</span>
                   </div>
-                  <SubmitButton variant="secondary" onClick={() => {}}>
+                  <SubmitButton variant="secondary" onClick={() => addToast('La gestione delle sessioni attive sarà disponibile in una prossima versione.', 'info')}>
                     <Icon name="eye" size={16} />
                     <span>{t('private.settings.security.sessions.button')}</span>
                   </SubmitButton>
@@ -400,7 +402,7 @@ export function SettingsPage() {
                     <span className={styles.securityLabel}>{t('private.settings.security.apiKey.label')}</span>
                     <span className={styles.securityDesc}>{t('private.settings.security.apiKey.description')}</span>
                   </div>
-                  <SubmitButton variant="secondary" onClick={() => {}}>
+                  <SubmitButton variant="secondary" onClick={() => addToast('Le API key saranno disponibili in una prossima versione.', 'info')}>
                     <Icon name="lock" size={16} />
                     <span>{t('private.settings.security.apiKey.button')}</span>
                   </SubmitButton>

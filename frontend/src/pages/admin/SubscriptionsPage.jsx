@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
+import { UIContext } from '../../context/UIContext'
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs/Breadcrumbs'
 import { DataTable } from '../../components/tables/DataTable'
@@ -15,6 +16,7 @@ import styles from './SubscriptionsPage.module.css'
 
 export function SubscriptionsPage() {
   const { t } = useTranslation()
+  const { addToast } = useContext(UIContext)
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -147,7 +149,7 @@ export function SubscriptionsPage() {
         title={t('admin.subscriptions.title')}
         subtitle={t('admin.subscriptions.subtitle')}
         actions={
-          <SubmitButton variant="primary" onClick={() => {}}>
+          <SubmitButton variant="primary" onClick={() => addToast('La creazione di nuovi piani da interfaccia arriverà in una prossima versione (API già disponibile: POST /api/admin/plans).', 'info', 6000)}>
             <Icon name="plus" size={16} />
             <span>{t('admin.subscriptions.newPlan')}</span>
           </SubmitButton>
