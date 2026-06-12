@@ -20,6 +20,7 @@ import { getTenderById } from '../../api/tenders.api'
 import { getTasks, createTask, updateTask, deleteTask } from '../../api/tasks.api'
 import { getRequirementsByTender } from '../../api/requirements.api'
 import { getDocumentsByTender } from '../../api/documents.api'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './TenderDetailPage.module.css'
 
 function normalizeTender(row) {
@@ -59,6 +60,7 @@ export function TenderDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { canManageTenders } = usePermissions()
   const [tender, setTender] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -269,9 +271,11 @@ export function TenderDetailPage() {
               label={t(`status.${tender.status}`)}
               variant={TENDER_STATUS_COLORS[tender.status]}
             />
-            <button className={styles.iconBtn} onClick={() => {}} title={t('private.tenderDetail.editButton')}>
-              <Icon name="edit" size={18} />
-            </button>
+            {canManageTenders && (
+              <button className={styles.iconBtn} onClick={() => {}} title={t('private.tenderDetail.editButton')}>
+                <Icon name="edit" size={18} />
+              </button>
+            )}
           </div>
         }
       />

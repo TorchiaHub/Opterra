@@ -18,6 +18,7 @@ import { formatCurrency } from '../../utils/format'
 import { formatDate } from '../../utils/date'
 import { getTenders, createTender } from '../../api/tenders.api'
 import { useAuth } from '../../hooks/useAuth'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './TendersListPage.module.css'
 
 export function TendersListPage() {
@@ -25,6 +26,7 @@ export function TendersListPage() {
   const [searchParams] = useSearchParams()
   const { t } = useTranslation()
   const { user } = useAuth()
+  const { canManageTenders } = usePermissions()
   const [tenders, setTenders] = useState([])
   const [meta, setMeta] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -201,10 +203,12 @@ export function TendersListPage() {
         title={t('private.tenders.title')}
         subtitle={t('private.tenders.subtitle')}
         actions={
-          <SubmitButton variant="primary" onClick={() => setShowCreateModal(true)} className={styles.newBtn}>
-            <Icon name="plus" size={16} />
-            <span>{t('private.tenders.newTender')}</span>
-          </SubmitButton>
+          canManageTenders ? (
+            <SubmitButton variant="primary" onClick={() => setShowCreateModal(true)} className={styles.newBtn}>
+              <Icon name="plus" size={16} />
+              <span>{t('private.tenders.newTender')}</span>
+            </SubmitButton>
+          ) : null
         }
       />
 
@@ -242,7 +246,7 @@ export function TendersListPage() {
         }
       />
 
-      {showCreateModal && (
+      {canManageTenders && showCreateModal && (
         <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>

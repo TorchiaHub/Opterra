@@ -86,7 +86,7 @@ async function insertTender(payload) {
       value_amount, currency, publication_date, deadline_at, status, source_type, source_url, created_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      payload.tenantId, payload.title, payload.issuer, payload.type,
+      payload.tenantId, payload.title, payload.issuer, payload.type || 'tender',
       payload.referenceCode || null, payload.description || null,
       payload.valueAmount || null, payload.currency || 'EUR',
       payload.publicationDate || null, payload.deadlineAt,
